@@ -554,7 +554,7 @@ body{display:flex;align-items:flex-end;justify-content:center;padding:0;box-sizi
 
 /* ===== TARGET LOWER THIRD ===== */
 .target{position:fixed;left:0;bottom:0;transform:translateZ(25px);width:100vw;height:142px;background:linear-gradient(90deg,#4e217e,#173d89);color:#fff;padding:0 28px;border:2px solid #d7b3ff;border-radius:10px;font-size:clamp(24px,3vw,54px);font-weight:1000;letter-spacing:.02em;white-space:nowrap;display:none;align-items:center;justify-content:center;text-align:center;z-index:150;box-shadow:0 10px 30px #0008;box-sizing:border-box;text-transform:uppercase}
-.overlay.targetMode .frame{visibility:hidden}
+.overlay.targetMode .frame{display:none!important}
 @media(max-width:900px){.target{height:92px;width:96vw;font-size:clamp(14px,2.5vw,24px);padding:0 12px}}
 
 /* ============================================================
@@ -624,12 +624,12 @@ body{display:flex;align-items:flex-end;justify-content:center;padding:0;box-sizi
 .custom.show{display:flex}
 
 /* When custom is active, hide the normal frame */
-.overlay.customMode .frame{visibility:hidden}
+.overlay.customMode .frame{display:none!important}
 
 /* ===== CENTERED LOWER-THIRD GRAPHICS ===== */
 .banner{z-index:120;}
 .banner.partnership{background:linear-gradient(90deg,#17316f,#2b0d63);border-color:var(--cyan2);}
-.overlay.bannerMode .frame{visibility:hidden;}
+.overlay.bannerMode .frame{display:none!important;}
 .brkLogo{position:fixed;right:2.2vw;top:1.5vw;z-index:180;display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-weight:1000;pointer-events:none;animation:brkPulse 2.2s ease-in-out infinite}.brkLogoText{font-size:clamp(18px,2vw,34px);letter-spacing:-1px;color:#fff;text-shadow:0 0 10px var(--cyan2),0 0 22px #000}.brkLogoText span{color:var(--cyan2)}
 .liveBadge{display:flex;align-items:center;gap:6px;padding-right:2px;font-size:clamp(9px,.9vw,14px);letter-spacing:.12em;color:#ff1d1d;text-shadow:0 0 8px #ff0000,0 0 14px #000}.liveBlinkDot{width:clamp(7px,.65vw,12px);height:clamp(7px,.65vw,12px);border-radius:50%;background:#ff1515;box-shadow:0 0 7px #ff0000;animation:liveBlink 1s steps(2,end) infinite}.liveBlinkText{animation:liveBlink 1s steps(2,end) infinite}
 @keyframes brkPulse{0%,100%{filter:drop-shadow(0 0 0 var(--cyan2));transform:scale(1)}50%{filter:drop-shadow(0 0 12px var(--cyan2));transform:scale(1.05)}}
@@ -2487,6 +2487,15 @@ body{display:flex!important;align-items:flex-end!important;justify-content:cente
 .animation.animHat{background:linear-gradient(105deg,#005d32,#20e070)!important}
 </style>
 
+<style id="brklive19-no-blank-under-graphics">
+/* Never leave the normal score frame visible underneath a lower-third graphic.
+   Banner/player/toss/tournament/animation modes use only their own graphic. */
+#overlay.bannerMode .frame,
+#overlay.customMode .frame,
+#overlay.targetMode .frame{display:none!important;visibility:hidden!important;}
+/* Keep the transparent OBS canvas truly transparent when no graphic is active. */
+html,body{background:transparent!important;}
+</style>
 </body>
 </html>
 <style>
