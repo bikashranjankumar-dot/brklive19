@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BRKLIVE19 V4 Scorer</title>
+<style>
+:root{
+  --bg:#070a14;
+  --card:#11182a;
+  --line:#293754;
+  --text:#fff;
+  --muted:#aeb9d6;
+  --cyan:#00d9ff;
+  --blue:#087cff;
+  --purple:#9b2cff;
+  --green:#20e070;
+  --red:#ff3158;
+  --gold:#ffbf22;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:12px;
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  background:
+    radial-gradient(circle at 20% 0,#163c73 0,#070a14 38%),
+    linear-gradient(135deg,#07111f,#180d2c);
+}
+h1{margin:5px 0;text-align:center;font-size:26px}
+.sub{text-align:center;color:var(--muted);margin-bottom:12px}
+.status{text-align:center;padding:9px;border-radius:10px;background:#55131e;margin-bottom:10px}
+.status.ok{background:#084d2b}
+.card{background:linear-gradient(145deg,#121a2d,#0c1120);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 12px 30px #0006}
+.card h2{margin:0 0 12px;color:var(--cyan);font-size:19px}
+label{display:block;margin-top:6px;color:var(--muted);font-size:13px}
+input,select,textarea{width:100%;padding:11px;margin:5px 0;border-radius:10px;border:1px solid #34415f;background:#0b1020;color:#fff;font-size:15px}
+textarea{min-height:130px;resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btn{width:100%;border:0;border-radius:12px;padding:13px 8px;color:#fff;font-weight:800;font-size:14px;cursor:pointer;background:#27324b}
+.btn:hover{filter:brightness(1.15)}
+.run{background:linear-gradient(135deg,#007cff,#00d5ff)}
+.special{background:linear-gradient(135deg,#8b00ff,#ff1493)}
+.extra{background:linear-gradient(135deg,#b36a00,#ffbf22);color:#111}
+.wick{background:linear-gradient(135deg,#9b001f,#ff3158)}
+.good{background:linear-gradient(135deg,#079447,#20e070)}
+.blue{background:linear-gradient(135deg,#0064ff,#39b8ff)}
+.gold{background:linear-gradient(135deg,#b36a00,#ffd12f);color:#111}
+.dark{background:#1b2439}
+.freehit{background:linear-gradient(135deg,#d48a00,#ffe34d);color:#111}
+.hattrick{background:linear-gradient(135deg,#007f42,#20e070)}
+.custom{background:linear-gradient(135deg,#e100ff,#6c00ff)}
+.score{text-align:center;font-size:52px;font-weight:900}
+.overs{text-align:center;color:#c8d4ee;font-size:18px}
+.targetBox{margin-top:10px;padding:12px;text-align:center;border-radius:12px;background:linear-gradient(135deg,#302000,#161000);border:1px solid var(--gold);color:#fff}
+.targetBox b{color:var(--gold);font-size:18px}
+.mini{font-size:12px;color:var(--muted);line-height:1.5}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.event{border-left:4px solid var(--cyan);background:#0d1526;padding:9px;margin:5px 0;border-radius:7px}
+.statsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.statCard{background:#0d1526;border:1px solid #263452;border-radius:10px;padding:10px;text-align:center}
+.statCard b{font-size:18px}
+.themeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.theme{padding:12px;border-radius:12px;border:2px solid #2c3755;background:#12192b;color:#fff;font-weight:800;cursor:pointer}
+.theme.active{border-color:var(--cyan);box-shadow:0 0 15px #00eaff55}
+.theme-ipl,.theme-t20world,.theme-odiworld,.theme-champions,.theme-sa,.theme-delhi{position:relative;overflow:hidden;background-size:200% 100%;animation:themeMove 3s linear infinite}.theme-ipl{background:linear-gradient(135deg,#0b2c8a,#1a8cff,#e4a900)}.theme-t20world{background:linear-gradient(135deg,#06143f,#0e70d8,#50dcff)}.theme-odiworld{background:linear-gradient(135deg,#064b95,#19a9ff,#f1c600)}.theme-champions{background:linear-gradient(135deg,#171a67,#6d38d4,#f1c63d)}.theme-sa{background:linear-gradient(135deg,#07582c,#0bb45d,#e3c400)}.theme-delhi{background:linear-gradient(135deg,#72102e,#d92e5c,#f0b600)}@keyframes themeMove{0%{background-position:0 0}50%{background-position:100% 0}100%{background-position:0 0}}
+.theme-ipl,.theme-t20world,.theme-odiworld,.theme-champions,.theme-sa,.theme-delhi{box-shadow:inset 0 1px #fff7,0 0 18px #0008}.theme-ipl:after,.theme-t20world:after,.theme-odiworld:after,.theme-champions:after,.theme-sa:after,.theme-delhi:after{content:"";position:absolute;inset:-40% -15%;background:linear-gradient(110deg,transparent 35%,#fff4 48%,transparent 60%);transform:translateX(-70%);animation:themeSweep 2.8s ease-in-out infinite;pointer-events:none}@keyframes themeSweep{0%,30%{transform:translateX(-70%)}70%,100%{transform:translateX(70%)}}
+.modal{display:none;position:fixed;inset:0;background:#000c;z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.modalBox{width:min(560px,100%);max-height:90vh;overflow:auto;background:#11182a;border:1px solid #3b4d75;border-radius:18px;padding:18px;box-shadow:0 25px 80px #000}
+.modalBox h2{color:var(--cyan)}
+.close{float:right;border:0;background:#303a52;color:#fff;border-radius:9px;padding:7px 11px;cursor:pointer}
+.hidden{display:none!important}
+.lowerThirdEditor{
+  width:100%;
+  min-height:72px;
+  padding:16px 18px;
+  margin:5px 0 8px;
+  border-radius:10px;
+  border:1px solid #34415f;
+  background:#0b1020;
+  color:#fff;
+  font-size:22px;
+  line-height:1.25;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+.lowerPreview{
+  width:100%;
+  min-height:72px;
+  padding:14px 18px;
+  border-radius:10px;
+  background:#050914;
+  border:1px solid #263452;
+  text-align:center;
+  font-weight:800;
+  font-size:22px;
+  line-height:1.25;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow-wrap:anywhere;
+  white-space:normal;
+  word-break:break-word;
+}
+.match-selector{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;background:#0b1020;padding:10px 14px;border-radius:12px;border:1px solid var(--line)}
+.match-selector label{font-weight:700;color:var(--cyan);margin:0;font-size:14px}
+.match-selector select{flex:1;min-width:200px;padding:8px;border-radius:8px;background:#121a2d;color:#fff;border:1px solid var(--line);font-size:14px}
+.match-selector .btn{flex:0 1 auto;padding:8px 18px;font-size:13px;width:auto}
+@media(max-width:650px){
+  .g2,.g3{grid-template-columns:1fr}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .btns{grid-template-columns:repeat(3,1fr)}
+  .themeGrid{grid-template-columns:1fr 1fr}
+  .statsGrid{grid-template-columns:1fr}
+  .score{font-size:44px}
+  .match-selector{flex-direction:column;align-items:stretch}
+  .match-selector .btn{width:100%}
+}
+
+
+
+
+</style>
+<script>
+  // Standalone/local-file safe mode: never redirect away from scorer.html.
+  // If no login session exists, create a lightweight local session so the
+  // scorer can run directly from the project ZIP.
+  try {
+    if (!localStorage.getItem('brklive_user')) {
+      localStorage.setItem('brklive_user', JSON.stringify({local:true,name:'BRKLIVE19'}));
+    }
+  } catch(e) {}
+</script>
+<script>
+  // Scorer is a standalone control page. Theme selection is optional and
+  // must never redirect/stop the scorer from loading.
+</script>
+</head>
+<body>
+
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;">
+  <a href="./index.html" style="display:inline-block;padding:10px 16px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;background:#11182a;">← Home / Tournament</a>
+</div>
+
+<div style="position:sticky;top:0;z-index:1000;display:flex;justify-content:flex-end;padding:8px 0;background:linear-gradient(180deg,#070b16 82%,transparent);">
+<button class="btn custom" style="width:auto;padding:11px 20px;font-size:14px;box-shadow:0 6px 20px #0008;" onclick="openThemePage()">🎨 OPEN THEME SECTION</button>
+</div>
+<h1>🏏 BRKLIVE19 V4</h1>
+<div class="sub">Live Cricket Scorer • Auto‑Save to Firebase</div>
+  <div id="status" class="status ok">🟡 Initializing scorer…</div>
+<!-- ===== MATCH SELECTOR ===== -->
+<div class="card">
+  <div class="match-selector">
+    <label>📋 Select Match:</label>
+    <select id="matchSelector"></select>
+    <button class="btn blue" onclick="loadSelectedMatch()">Load Match</button>
+    <button class="btn good" onclick="refreshMatchList()">🔄 Refresh</button>
+  </div>
+</div>
+
+<!-- ===== MATCH STATUS & CONTROLS ===== -->
+<div class="card">
+  <h2>📋 Match Status</h2>
+  <div id="matchStatus" class="event">Match not started</div>
+  <div class="g2" style="margin-top:10px;">
+    <button class="btn good" onclick="openStart()">▶ START / SELECT PLAYERS</button>
+    <button class="btn special" onclick="openBowler(true)">🔄 CHANGE BOWLER</button>
+    <button class="btn wick" onclick="endInnings()">⏹ END INNINGS</button>
+    <button class="btn wick" onclick="newBatter()">🔄 NEW BATTER</button>
+    <button class="btn dark" onclick="resetMatch()">♻️ RESET MATCH</button>
+  </div>
+</div>
+
+<!-- ===== LIVE SCORE ===== -->
+<div class="card">
+  <h2>🏏 Live Scoring</h2>
+  <div id="liveScore" class="score">0/0</div>
+  <div id="liveOvers" class="overs">0.0 OV</div>
+  <div id="targetBox" class="targetBox"><span id="targetText">First innings</span></div>
+  <div class="mini" id="liveMeta">Waiting to start</div>
+  <div class="btns" style="margin-top:10px">
+    <button class="btn run" onclick="scoreRuns(0)">0</button>
+    <button class="btn run" onclick="scoreRuns(1)">1</button>
+    <button class="btn run" onclick="scoreRuns(2)">2</button>
+    <button class="btn run" onclick="scoreRuns(3)">3</button>
+    <button class="btn run" onclick="scoreRuns(4)">4</button>
+    <button class="btn run" onclick="scoreRuns(5)">5</button>
+    <button class="btn run" onclick="scoreRuns(6)">6</button>
+    <button class="btn special" onclick="openExtra('wide')">WIDE</button>
+    <button class="btn special" onclick="openExtra('noball')">NO BALL</button>
+    <button class="btn extra" onclick="openExtra('bye')">BYE</button>
+    <button class="btn extra" onclick="openExtra('legbye')">LEG BYE</button>
+    <button class="btn wick" onclick="openWicket()">WICKET / RUN OUT</button>
+  </div>
+  <div class="g2" style="margin-top:8px">
+    <button class="btn dark" onclick="undo()">↩ UNDO</button>
+    <button class="btn dark" onclick="saveNow()">💾 SAVE NOW</button>
+  </div>
+</div>
+
+<!-- ===== CUSTOM LOWER THIRD ===== -->
+<div class="card">
+  <h2>✨ Custom Lower Third</h2>
+  <textarea id="customLowerText" class="lowerThirdEditor" rows="2" placeholder="Example: GRAND FINAL • BRKLIVE19 LIVE"></textarea>
+  <div class="g2">
+    <button class="btn custom" onclick="showCustomLower()">SHOW LOWER THIRD</button>
+    <button class="btn dark" onclick="hideCustomLower()">HIDE LOWER THIRD</button>
+  </div>
+  <div id="lowerPreview" class="lowerPreview" style="margin-top:8px">Preview</div>
+</div>
+
+<!-- ===== CURRENT STATS ===== -->
+<div class="card">
+  <h2>📊 Current Stats</h2>
+  <div class="g2">
+    <div><b id="b1label">🏏 Striker</b><div class="event" id="b1stat">—</div></div>
+    <div><b>🏏 Non-Striker</b><div class="event" id="b2stat">—</div></div>
+  </div>
+  <div class="event">🎯 <b id="bowlerLabel">Bowler</b>: <span id="bowlerStat">—</span></div>
+  <div class="statsGrid">
+    <div class="statCard">CRR<br><b id="crr">0.00</b></div>
+    <div class="statCard">RRR<br><b id="rrr">0.00</b></div>
+    <div class="statCard">EXTRAS<br><b id="extras">0</b></div>
+  </div>
+</div>
+
+<!-- ===== OVERLAY CONTROLLER ===== -->
+<div class="card">
+  <h2>📺 Overlay Controller</h2>
+  <div class="mini">All scoring and overlay controls use the same Firebase <b>liveScore</b> record. Local BroadcastChannel + localStorage fallback is also active for same-device display.</div>
+  <div class="g2" style="margin-top:10px">
+    <button class="btn blue" onclick="openDisplayScreen()">🖥 OPEN DISPLAY SCREEN</button>
+    <button class="btn dark" onclick="syncOverlayNow()">🔄 UPDATE DISPLAY NOW</button>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn custom" style="width:auto;padding:10px 18px;" onclick="openThemePage()">🎨 OPEN THEME SECTION</button>
+  </div>
+
+  <h3 style="color:var(--cyan);margin-top:14px">🖥 Overlay Mode</h3>
+  <div class="g4">
+    <button class="btn blue" onclick="setMode('default')">DEFAULT</button>
+    <button class="btn custom" onclick="togglePartnership()">🤝 PARTNERSHIP</button>
+    <button class="btn good" onclick="setMode('bowler')">BOWLER</button>
+    <button class="btn freehit" onclick="setMode('summary')">SUMMARY</button>
+    <button class="btn gold" onclick="showInningsScoreboard(1)">1ST INN SCOREBOARD</button>
+    <button class="btn gold" onclick="showInningsScoreboard(2)">2ND INN SCOREBOARD</button>
+    <button class="btn gold" onclick="toggleTargetOverlay()">🎯 TARGET</button>
+  </div>
+
+  <h3 style="color:var(--cyan);margin-top:14px">🏷️ Banners & Player Graphics</h3>
+  <div class="g4">
+    <button class="btn special" onclick="toggleOverlayBanner('tournament')">🏆 TOURNAMENT</button>
+    <button class="btn blue" onclick="toggleOverlayBanner('venue')">📍 VENUE</button>
+    <button class="btn custom" onclick="toggleOverlayBanner('match')">⚔️ MATCH</button>
+    <button class="btn good" onclick="toggleOverlayBanner('toss')">🪙 TOSS</button>
+    <button class="btn custom" onclick="togglePartnership()">🤝 PARTNERSHIP</button>
+    <button class="btn blue" onclick="togglePlayerLower('b1')">🏏 B1 STATUS</button>
+    <button class="btn blue" onclick="togglePlayerLower('b2')">🏏 B2 STATUS</button>
+    <button class="btn dark" onclick="toggleOverlayBanner('result')">🏆 RESULT</button>
+  </div>
+
+  <h3 style="color:var(--cyan);margin-top:14px">🎬 Animation Controls</h3>
+  <div class="g4">
+    <button class="btn freehit" onclick="broadcastEvent('FREE HIT')">🟡 FREE HIT</button>
+    <button class="btn hattrick" onclick="broadcastEvent('HAT-TRICK BALL')">🟢 HAT-TRICK</button>
+    <button class="btn run" onclick="broadcastEvent('FOUR')">🔵 FOUR</button>
+    <button class="btn special" onclick="broadcastEvent('SIX')">🟣 SIX</button>
+    <button class="btn wick" onclick="broadcastEvent('WICKET')">🔴 WICKET</button>
+    <button class="btn wick" onclick="broadcastEvent('RUN OUT')">🏃 RUN OUT</button>
+  </div>
+
+</div>
+
+<!-- ===== MODALS ===== -->
+<div id="startModal" class="modal">
+  <div class="modalBox">
+    <button class="close" onclick="closeModal('startModal')">✕</button>
+    <h2>▶ Start Match</h2>
+    <p class="mini" id="startInfo"></p>
+    <label>Striker</label><select id="startStriker"></select>
+    <label>Non-Striker</label><select id="startNon"></select>
+    <label>Bowler</label><select id="startBowler"></select>
+    <button class="btn good" style="width:100%;margin-top:10px" onclick="confirmStart()">START LIVE</button>
+  </div>
+</div>
+
+<div id="extraModal" class="modal">
+  <div class="modalBox">
+    <button class="close" onclick="closeModal('extraModal')">✕</button>
+    <h2 id="extraTitle">Additional Runs</h2>
+    <p class="mini">Select the total additional runs for this delivery.</p>
+    <div class="btns">
+      <button class="btn extra" onclick="confirmExtra(1)">1</button>
+      <button class="btn extra" onclick="confirmExtra(2)">2</button>
+      <button class="btn extra" onclick="confirmExtra(3)">3</button>
+      <button class="btn extra" onclick="confirmExtra(4)">4</button>
+      <button class="btn extra" onclick="confirmExtra(5)">5</button>
+      <button class="btn extra" onclick="confirmExtra(6)">6</button>
+    </div>
+  </div>
+</div>
+
+<div id="wicketModal" class="modal">
+  <div class="modalBox">
+    <button class="close" onclick="closeModal('wicketModal')">✕</button>
+    <h2>🟥 Wicket / Run Out</h2>
+    <label>Dismissed batsman</label><select id="dismissed"></select>
+    <label>Wicket type</label>
+    <select id="dismissType">
+      <option>Bowled</option><option>Caught</option><option>LBW</option>
+      <option>Stumped</option><option>Run Out</option><option>Hit Wicket</option><option>Retired Out</option>
+    </select>
+    <label>Runs completed on run-out</label>
+    <input id="runoutRuns" type="number" min="0" max="6" value="0">
+    <button class="btn wick" style="width:100%;margin-top:10px" onclick="confirmWicket()">CONFIRM WICKET</button>
+  </div>
+</div>
+
+<div id="bowlerModal" class="modal">
+  <div class="modalBox">
+    <button class="close" onclick="closeModal('bowlerModal')">✕</button>
+    <h2>🎯 New Bowler</h2>
+    <p class="mini" id="bowlerInfo"></p>
+    <select id="newBowler"></select>
+    <button class="btn good" style="width:100%;margin-top:10px" onclick="confirmBowler()">SET BOWLER</button>
+  </div>
+</div>
+
+<div id="batterModal" class="modal">
+  <div class="modalBox">
+    <button class="close" onclick="closeModal('batterModal')">✕</button>
+    <h2>🏏 New Batsman</h2>
+    <select id="newBatter"></select>
+    <button class="btn good" style="width:100%;margin-top:10px" onclick="confirmBatter()">SET BATTER</button>
+  </div>
+</div>
+
+<div id="secondInningsModal" class="modal">
+  <div class="modalBox" style="text-align:center">
+    <div style="font-size:52px">🏏</div>
+    <h2>FIRST INNINGS COMPLETE</h2>
+    <div id="secondInningsMatch" class="mini" style="margin-bottom:8px"></div>
+    <p class="mini" id="secondInningsSummary"></p>
+    <button class="btn good" style="width:100%;margin-top:12px" onclick="confirmStartSecondInnings()">▶ START 2ND INNINGS</button>
+  </div>
+</div>
+
+<script type="module">
+  // ---- Firebase imports ----
+  let initializeApp, getDatabase, ref, set, onValue;
+  let firebaseReady = false;
+  try {
+    const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const firebaseDb = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    initializeApp = firebaseApp.initializeApp;
+    getDatabase = firebaseDb.getDatabase;
+    ref = firebaseDb.ref;
+    set = firebaseDb.set;
+    onValue = firebaseDb.onValue;
+    firebaseReady = true;
+  } catch (e) {
+    console.warn("Firebase unavailable; using local scorer storage.", e);
+    initializeApp = () => null;
+    getDatabase = () => null;
+    ref = (_db, path) => ({ path });
+    set = async (_ref, data) => localStorage.setItem("brklive19_local_liveScore", JSON.stringify(data));
+    onValue = (_ref, callback, errorCallback) => {
+      try {
+        const raw = localStorage.getItem("brklive19_local_liveScore");
+        callback({ val: () => raw ? JSON.parse(raw) : null });
+      } catch (err) { if (typeof errorCallback === "function") errorCallback(err); }
+    };
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLWq1bqJ32F2cg3mqYQ0uwXcS3zvTA3A4",
+    authDomain: "brklive19-2bab4.firebaseapp.com",
+    databaseURL: "https://brklive19-2bab4-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "brklive19-2bab4",
+    storageBucket: "brklive19-2bab4.firebasestorage.app",
+    messagingSenderId: "294058533898",
+    appId: "1:294058533898:web:4996705937e969939cabf3",
+    measurementId: "G-RW18E7LVEX"
+  };
+  const app = firebaseReady ? initializeApp(firebaseConfig) : null;
+  const db = firebaseReady ? getDatabase(app) : null;
+  const liveRef = firebaseReady && db ? ref(db, "liveScore") : null;
+  // Secondary per-match channel. The primary liveScore path is kept for compatibility.
+  const liveMatchRef = firebaseReady && db ? (matchId => ref(db, "liveScoreByMatch/" + encodeURIComponent(String(matchId || "default")))) : null;
+  let liveChannel = null;
+  try { liveChannel = new BroadcastChannel("BRKLIVE19_LIVE_OVERLAY"); } catch(e) { liveChannel = null; }
+
+  // Robust cross-tab bridge. Firebase is preferred, but localStorage polling
+  // and BroadcastChannel keep the overlay responsive when the project is
+  // opened directly from a ZIP/file on the same device.
+  function publishLocalBridge(data){
+    const packet = { ...data, __brklive19Bridge: true, __bridgeVersion: 2, __bridgeUpdatedAt: Date.now() };
+    try { localStorage.setItem("brklive19_liveScore", JSON.stringify(packet)); } catch(e) {}
+    try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(packet)); } catch(e) {}
+    try { localStorage.setItem("brklive19_liveScore_tick", String(Date.now())); } catch(e) {}
+    try { if (liveChannel) liveChannel.postMessage({type:"LIVE_SCORE", data:packet}); } catch(e) {}
+  }
+
+  // ---- Helpers ----
+  const $ = id => document.getElementById(id);
+  const num = value => Number(value) || 0;
+  function escapeHTML(v) { return String(v??"").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+  function teamName(side) {
+    if (side === "A") return (S.teamA || "TEAM A");
+    if (side === "B") return (S.teamB || "TEAM B");
+    return side || "";
+  }
+  function teamShort(side) {
+    const full = teamName(side);
+    // Try to get a short name: take first 3 chars or first word
+    if (full && full.length > 4) {
+      const parts = full.split(" ");
+      if (parts.length > 1) return parts.map(p => p[0]).join("").toUpperCase();
+      return full.substring(0, 3).toUpperCase();
+    }
+    return full || side;
+  }
+  function players(side) { return side === "A" ? (S.xiA || []) : (S.xiB || []); }
+  function oversText(balls) { balls = num(balls); return Math.floor(balls/6) + "." + (balls%6); }
+  function legalBallsRemaining() { return Math.max((S.maxOvers*6) - S.legalBalls, 0); }
+  function battingStats(name) {
+    if (!name) return { runs:0, balls:0, fours:0, sixes:0, out:false };
+    if (!S.batters[name]) S.batters[name] = { runs:0, balls:0, fours:0, sixes:0, out:false };
+    return S.batters[name];
+  }
+  function bowlingStats(name) {
+    if (!name) return { balls:0, runs:0, wickets:0 };
+    if (!S.bowlers[name]) S.bowlers[name] = { balls:0, runs:0, wickets:0 };
+    return S.bowlers[name];
+  }
+
+  function createDefaultState() {
+    return {
+      version:4, started:false, innings:1, battingTeam:"A", bowlingTeam:"B",
+      runs:0, wickets:0, legalBalls:0, extras:0, partnershipRuns:0, partnershipBalls:0,
+      extraDetail:{ wide:0, noball:0, bye:0, legbye:0 },
+      history:[], events:[], batters:{}, bowlers:{}, fallWickets:[], recentBalls:[],
+      striker:"", nonStriker:"", bowler:"", target:0,
+      maxOvers:6, theme:"blue", mode:"default",
+      tournament:"", venue:"", matchName:"", teamA:"", teamB:"",
+      tossWinner:"", tossDecision:"", xiA:[], xiB:[],
+      firstInnings:{ team:"", runs:0, wickets:0, balls:0, extras:0 },
+      secondInningsStarted:false, pendingSecondInnings:false,
+      broadcast:{ type:"", text:"", active:false },
+      customLower:{ text:"", active:false },
+      customColors:{ primary:"#00b8e8", secondary:"#ffd900", accent:"#102875", summaryBg:"#07101f" },
+      matchWinner:"", matchResult:"", resultText:"", status:"live",
+      overlay:{
+        showTournament:false, showVenue:false, showMatch:false, showToss:false, showResult:false, showBowler:false,
+        positions:{ tournament:"upper", match:"middle", toss:"middle", custom:"upper" },
+        scoreVisible:true, intro:false, introDismissedAt:0,
+        playerLower:{ active:false, slot:"", player:"" },
+        partnership:{ active:false }
+      },
+      matchId:""
+    };
+  }
+
+  let S = createDefaultState();
+  let syncing = false;
+  let currentMatchId = null;
+
+  const urlTheme = new URLSearchParams(window.location.search).get('theme') || localStorage.getItem('brklive19_pending_theme') || '';
+  if (['blue','neon','green','gold','theme2','theme3','theme4','theme5','theme6','glass','carbon','stadium','aurora','metallic','redblack','rainbow','custom'].includes(urlTheme)) S.theme = urlTheme;
+  localStorage.removeItem('brklive19_pending_theme');
+  const overlayIntroKey = Date.now();
+
+  // ---- Load match bridge from localStorage ----
+  function loadMatchBridge(matchId) {
+    try {
+      const raw = localStorage.getItem('brklive19_score_bridge');
+      if (!raw) return false;
+      const b = JSON.parse(raw);
+      if (!b || (!b.teamA && !b.teamB)) return false;
+
+      // Theme changes must NEVER create a fresh match. Restore the saved match state first.
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem('brklive19_match_state_' + (matchId || b.matchId)) || 'null'); } catch(e) {}
+      if (saved && typeof saved === 'object') {
+        S = { ...createDefaultState(), ...saved };
+      }
+
+      S.tournament = b.tournamentName || b.tournament || S.tournament || '';
+      S.venue = b.venue || b.tournamentVenue || S.venue || '';
+      S.matchName = b.matchName || S.matchName || '';
+      S.teamA = b.teamA || S.teamA || 'Team A';
+      S.teamB = b.teamB || S.teamB || 'Team B';
+      S.maxOvers = Number(b.maxOvers) || S.maxOvers || 20;
+      S.tossWinner = b.tossWinner === 'teamA' ? 'A' : (b.tossWinner === 'teamB' ? 'B' : (b.tossWinner || S.tossWinner || ''));
+      S.tossDecision = b.tossDecision || S.tossDecision || 'bat';
+      S.xiA = Array.isArray(b.xiA) && b.xiA.length ? b.xiA : (S.xiA || []);
+      S.xiB = Array.isArray(b.xiB) && b.xiB.length ? b.xiB : (S.xiB || []);
+      S.matchId = b.matchId || matchId || S.matchId || '';
+
+      // Only initialise a brand-new match. Existing saved scores/innings stay untouched.
+      if (!saved) {
+        S.started = false;
+        S.innings = 1;
+        S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0; S.partnershipRuns=0; S.partnershipBalls=0;
+        S.history = []; S.events = []; S.batters = {}; S.bowlers = {};
+        S.striker = ''; S.nonStriker = ''; S.bowler = ''; S.target = 0;
+        S.matchWinner=''; S.matchResult=''; S.resultText=''; S.status='live';
+      }
+      S.overlay = { ...(S.overlay||{}), showTournament:true, scoreVisible:false, intro:true };
+      return true;
+    } catch (e) { console.error('Match bridge error:', e); return false; }
+  }
+
+  // ---- Get all matches from localStorage ----
+  function getAllMatches() {
+    try {
+      const raw = localStorage.getItem('brklive_matches');
+      if (!raw) return [];
+      const matches = JSON.parse(raw);
+      return Array.isArray(matches) ? matches : [];
+    } catch { return []; }
+  }
+
+  // ---- Populate match selector ----
+  function populateMatchSelector() {
+    const sel = $('matchSelector');
+    if (!sel) return;
+    const matches = getAllMatches();
+    sel.innerHTML = '<option value="">-- Select a match --</option>';
+    matches.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      const label = `${m.teamAName || 'A'} vs ${m.teamBName || 'B'} (${m.matchType || 'T20'}) #${m.matchNo || '?'}`;
+      opt.textContent = label;
+      if (currentMatchId === m.id) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  window.refreshMatchList = function() {
+    populateMatchSelector();
+    toast('Match list refreshed');
+  };
+
+  window.loadSelectedMatch = function() {
+    const sel = $('matchSelector');
+    const id = sel.value;
+    if (!id) { alert('Please select a match.'); return; }
+    // Load match data from storage
+    const matches = getAllMatches();
+    const match = matches.find(m => m.id === id);
+    if (!match) { alert('Match not found.'); return; }
+    currentMatchId = id;
+    // Build bridge data from the selected tournament + match
+    const tournaments = (() => {
+      try { return JSON.parse(localStorage.getItem('brklive_tournaments') || '[]'); } catch { return []; }
+    })();
+    const tournament = tournaments.find(t => t.id === match.tournamentId) || {};
+    const bridge = {
+      tournament: tournament.name || match.tournamentName || '',
+      tournamentName: tournament.name || match.tournamentName || '',
+      tournamentVenue: tournament.venue || match.tournamentVenue || '',
+      venue: match.venue || tournament.venue || '',
+      matchName: match.matchName || `${match.teamAName} vs ${match.teamBName}`,
+      teamA: match.teamAName || 'Team A',
+      teamB: match.teamBName || 'Team B',
+      maxOvers: match.maxOvers || 20,
+      tossWinner: match.tossWinner === 'teamA' ? 'A' : (match.tossWinner === 'teamB' ? 'B' : (match.tossWinner || '')),
+      tossDecision: match.tossDecision || 'bat',
+      xiA: match.xiTeamA || [],
+      xiB: match.xiTeamB || [],
+      matchId: match.id
+    };
+    localStorage.setItem('brklive19_score_bridge', JSON.stringify(bridge));
+    loadMatchBridge(match.id);
+    S.matchId = match.id;
+    // Reset score state
+    S.started = false;
+    S.innings = 1;
+    S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0;
+    S.history = []; S.events = []; S.batters = {}; S.bowlers = {}; S.fallWickets=[]; S.recentBalls=[];
+    S.striker = ''; S.nonStriker = ''; S.bowler = ''; S.target = 0;
+    S.matchWinner=''; S.matchResult=''; S.resultText=''; S.status='live';
+    S.firstInnings = { team:'', runs:0, wickets:0, balls:0, extras:0 };
+    S.secondInningsStarted = false;
+    S.pendingSecondInnings = false;
+    S.overlay = { showTournament:true, showVenue:false, showMatch:false, showToss:false, showResult:false, showBowler:false, positions:{}, scoreVisible:false, intro:true, playerLower:{active:false,slot:'',player:''}, partnership:{active:false} };
+    saveNow();
+    render();
+    toast('Match loaded: ' + match.teamAName + ' vs ' + match.teamBName);
+  };
+
+  // ---- Toast ----
+  function toast(msg) {
+    const el = document.getElementById('status');
+    if (el) {
+      el.textContent = '🔔 ' + msg;
+      el.className = 'status ok';
+      setTimeout(() => {
+        el.textContent = firebaseReady ? '🟢 Firebase Connected • Auto-Save ON' : '🟡 Local Mode • Auto-Save ON';
+        el.className = 'status ok';
+      }, 3000);
+    }
+  }
+
+  // ---- Sync live score back to Index match record ----
+  function syncScoreToIndex() {
+    try {
+      if (!S.matchId) return;
+      const raw = localStorage.getItem("brklive_matches");
+      if (!raw) return;
+      const matches = JSON.parse(raw);
+      if (!Array.isArray(matches)) return;
+      const m = matches.find(x => x.id === S.matchId);
+      if (!m) return;
+
+      m.battingTeam = S.battingTeam === "A" ? S.teamA : S.teamB;
+      m.striker = S.striker;
+      m.nonStriker = S.nonStriker;
+      m.bowler = S.bowler;
+      m.totalRuns = Number(S.runs) || 0;
+      m.totalWickets = Number(S.wickets) || 0;
+      m.totalBalls = Number(S.legalBalls || 0);
+      m.totalOvers = Number((Number(S.legalBalls || 0) / 6).toFixed(1));
+      m.firstInnings = JSON.parse(JSON.stringify(S.firstInnings || {}));
+      if (S.innings === 2) m.secondInnings = {team:S.battingTeam,runs:Number(S.runs)||0,wickets:Number(S.wickets)||0,balls:Number(S.legalBalls)||0,extras:Number(S.extras)||0};
+      m.currentInnings = S.innings;
+      m.target = S.target || null;
+      m.status = S.status || "live";
+      m.completed = S.status === "completed";
+      m.winner = S.matchWinner || null;
+      m.resultText = S.resultText || "";
+      m.batsmenStats = S.batters || {};
+      m.bowlerStats = S.bowlers || {};
+      m.currentOverBalls = S.recentBalls || [];
+      m.lastUpdated = new Date().toISOString();
+      localStorage.setItem("brklive_matches", JSON.stringify(matches));
+    } catch (e) {
+      console.warn("Index match sync failed:", e);
+    }
+  }
+
+  // ---- Save ----
+  async function save() {
+    try { if (S.matchId) localStorage.setItem("brklive19_match_state_" + S.matchId, JSON.stringify(S)); } catch(e) {}
+    if (!firebaseReady || !liveRef) {
+      publishLocalBridge(S);
+      syncScoreToIndex();
+      return;
+    }
+    syncing = true;
+    const strikerStats = battingStats(S.striker);
+    const nonStats = battingStats(S.nonStriker);
+    const bowlerStatsNow = bowlingStats(S.bowler);
+    const data = {
+      ...S,
+      history:[],
+      updatedAt:Date.now(),
+      b1:S.striker, b2:S.nonStriker,
+      batsman1:S.striker, batsman2:S.nonStriker,
+      batsman1Runs:strikerStats.runs, batsman2Runs:nonStats.runs,
+      batsman1Balls:strikerStats.balls, batsman2Balls:nonStats.balls,
+      batsman1Fours:strikerStats.fours, batsman2Fours:nonStats.fours,
+      batsman1Sixes:strikerStats.sixes, batsman2Sixes:nonStats.sixes,
+      bowler:S.bowler,
+      bowlerOvers:S.bowler ? oversText(bowlerStatsNow.balls) : "0.0",
+      bowlerRuns:S.bowler ? bowlerStatsNow.runs : 0,
+      bowlerWickets:S.bowler ? bowlerStatsNow.wickets : 0,
+      overs:oversText(S.legalBalls),
+      currentOver:oversText(S.legalBalls),
+      currentRunRate:currentRunRate(),
+      requiredRunRate:requiredRunRate(),
+      ballsRemaining:legalBallsRemaining(),
+      runsToWin:runsToWin(),
+      target:S.target,
+      fallWickets:[...(S.fallWickets||[])],
+      recentBalls:[...(S.recentBalls||[])],
+      customLower:{...(S.customLower||{})},
+      overlay:{...(S.overlay||{})},
+      battingTeam:S.battingTeam,
+      bowlingTeam:S.bowlingTeam,
+      teamAScore: S.battingTeam === "A" ? S.runs : S.firstInnings.runs,
+      teamBScore: S.battingTeam === "B" ? S.runs : S.firstInnings.runs,
+      teamAShort: teamShort('A'),
+      teamBShort: teamShort('B'),
+      battingShort: teamShort(S.battingTeam),
+      bowlingShort: teamShort(S.bowlingTeam)
+    };
+    try {
+      // Publish immediately through every available bridge.
+      publishLocalBridge(data);
+      await set(liveRef, data);
+      // Secondary per-match path; failure here must never block the main overlay path.
+      try { if (S.matchId && liveMatchRef) await set(liveMatchRef(S.matchId), data); } catch(e) { console.warn("Per-match live channel unavailable", e); }
+      publishLocalBridge(data);
+      syncScoreToIndex();
+    } catch (error) {
+      console.error('Firebase save failed:', error);
+      try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(data)); } catch(e) {}
+      const el = $("status");
+      if (el) {
+        el.textContent = "🟢 Firebase unavailable — display is using local live bridge";
+        el.className = "status";
+      }
+    } finally {
+      syncing = false;
+    }
+  }
+
+  // Manual overlay sync helper used by every control button.
+  window.syncOverlayNow = async function(){
+    try { await save(); render(); } catch(e) { console.error("Overlay sync failed", e); }
+  };
+
+  function currentRunRate() { if (!S.legalBalls) return 0; return Number((S.runs / (S.legalBalls/6)).toFixed(2)); }
+  function runsToWin() { if (S.innings!==2 || !S.target) return 0; return Math.max(S.target - S.runs, 0); }
+  function requiredRunRate() { if (S.innings!==2 || !S.target) return 0; const r=runsToWin(), b=legalBallsRemaining(); if(r<=0||b<=0)return 0; return Number(((r/b)*6).toFixed(2)); }
+
+  // ---- pushHistory ----
+  function pushHistory() {
+    if (!S.history) S.history = [];
+    S.history.push(JSON.stringify({
+      runs:S.runs, wickets:S.wickets, legalBalls:S.legalBalls, extras:S.extras,
+      extraDetail:{...S.extraDetail}, batters:JSON.parse(JSON.stringify(S.batters)),
+      bowlers:JSON.parse(JSON.stringify(S.bowlers)),
+      striker:S.striker, nonStriker:S.nonStriker, bowler:S.bowler,
+      events:[...S.events], target:S.target, fallWickets:JSON.parse(JSON.stringify(S.fallWickets||[])), recentBalls:JSON.parse(JSON.stringify(S.recentBalls||[])),
+      innings:S.innings, battingTeam:S.battingTeam, bowlingTeam:S.bowlingTeam,
+      started:S.started, firstInnings:{...S.firstInnings}, partnershipRuns:S.partnershipRuns, partnershipBalls:S.partnershipBalls
+    }));
+    if (S.history.length > 20) S.history.shift();
+  }
+
+  // ---- openStart ----
+  window.openStart = function() {
+    if (!S.teamA || !S.teamB || S.xiA.length < 2 || S.xiB.length < 2 || !S.tossWinner || !S.tossDecision) {
+      alert("Match data incomplete. Please load a match first.");
+      return;
+    }
+    if (S.innings === 1) {
+      S.battingTeam = S.tossDecision === "bat" ? S.tossWinner : (S.tossWinner === "A" ? "B" : "A");
+    }
+    S.bowlingTeam = S.battingTeam === "A" ? "B" : "A";
+    const batList = players(S.battingTeam);
+    const bowlList = players(S.bowlingTeam);
+    options("startStriker", batList);
+    options("startNon", batList);
+    options("startBowler", bowlList);
+    $("startInfo").textContent = `${teamName(S.battingTeam)} (${teamShort(S.battingTeam)}) batting • ${teamName(S.bowlingTeam)} (${teamShort(S.bowlingTeam)}) bowling • ${S.maxOvers} overs`;
+    openModal("startModal");
+  };
+
+  window.confirmStart = async function() {
+    const striker = $("startStriker").value;
+    const non = $("startNon").value;
+    const bowler = $("startBowler").value;
+    if (!striker || !non || !bowler) { alert("Select striker, non-striker and bowler."); return; }
+    if (striker === non) { alert("Striker and Non-Striker must be different."); return; }
+    S.started = true;
+    S.striker = striker; S.nonStriker = non; S.bowler = bowler;
+    S.partnershipRuns = 0; S.partnershipBalls = 0;
+    battingStats(striker); battingStats(non); bowlingStats(bowler);
+    S.events.push(`START: ${striker} & ${non} vs ${bowler}`);
+    closeModal("startModal");
+    await save();
+    render();
+  };
+
+  function options(id, list, selected="") {
+    $(id).innerHTML = `<option value="">Select</option>` +
+      list.map(p => `<option value="${escapeHTML(p)}" ${p===selected?"selected":""}>${escapeHTML(p)}</option>`).join("");
+  }
+
+  function swapBatters() { [S.striker, S.nonStriker] = [S.nonStriker, S.striker]; }
+  function addLegalBall() { S.legalBalls++; if (S.bowler) bowlingStats(S.bowler).balls++; }
+
+  async function checkOver() {
+    if (!S.started || S.legalBalls <= 0 || S.legalBalls % 6 !== 0) return;
+    if (S.legalBalls >= Number(S.maxOvers || 0) * 6) {
+      await finishInnings();
+      return;
+    }
+    swapBatters();
+    S.events.push(`OVER ${oversText(S.legalBalls)} COMPLETE`);
+    await save();
+    render();
+    setTimeout(() => { if (S.started) openBowler(true); }, 200);
+  }
+
+  async function finishInnings() {
+    if (!S.started || S.pendingSecondInnings || S.status === "completed") return;
+    S.started = false;
+    if (S.innings === 1) {
+      S.firstInnings = {
+        team:S.battingTeam, runs:S.runs, wickets:S.wickets, balls:S.legalBalls, extras:S.extras,
+        extraDetail:{...S.extraDetail},
+        batters:JSON.parse(JSON.stringify(S.batters || {})),
+        bowlers:JSON.parse(JSON.stringify(S.bowlers || {})),
+        events:[...(S.events || [])],
+        fallWickets:JSON.parse(JSON.stringify(S.fallWickets||[])),
+        recentBalls:JSON.parse(JSON.stringify(S.recentBalls||[])),
+        partnershipRuns:S.partnershipRuns, partnershipBalls:S.partnershipBalls,
+        xi:Array.from(players(S.battingTeam)||[])
+      };
+      S.target = S.runs + 1;
+      S.pendingSecondInnings = true;
+      S.events.push(`🏁 1ST INNINGS COMPLETE — ${S.runs}/${S.wickets}`);
+      await save();
+      render();
+      // Show second innings modal
+      const nextTeam = teamName(S.battingTeam === "A" ? "B" : "A");
+      const nextShort = teamShort(S.battingTeam === "A" ? "B" : "A");
+      const completedOvers = oversText(S.legalBalls);
+      const maxOvers = Number(S.maxOvers || 0);
+      $("secondInningsMatch").textContent = `${S.matchName || `${S.teamA} vs ${S.teamB}`} • ${maxOvers} overs per innings`;
+      $("secondInningsSummary").innerHTML =
+        `<b>${escapeHTML(teamName(S.battingTeam))}</b> (${escapeHTML(teamShort(S.battingTeam))}) scored <b>${S.runs}/${S.wickets}</b> in <b>${completedOvers}</b> overs<br>` +
+        `Target for <b>${escapeHTML(nextTeam)}</b> (${escapeHTML(nextShort)}): <b>${S.target}</b>`;
+      openModal("secondInningsModal");
+    } else {
+      // A manual/maximum-overs end of the 2nd innings also decides the match.
+      if (S.status !== "completed") {
+        const chasing = teamName(S.battingTeam);
+        const defending = teamName(S.firstInnings.team);
+        const need = S.target - S.runs;
+        if (need === 1) completeMatch("", "MATCH TIED");
+        else if (need > 1) completeMatch(defending, `${defending} WON BY ${Math.max(need - 1, 0)} RUNS`);
+        else completeMatch(chasing, `${chasing} WON BY ${Math.max(10 - S.wickets, 0)} WICKETS`);
+      }
+      await save();
+      render();
+    }
+  }
+
+  window.confirmStartSecondInnings = async function() {
+    if (S.innings !== 1 || !S.firstInnings || !S.firstInnings.team) {
+      alert("First innings data is not ready.");
+      return;
+    }
+    closeModal("secondInningsModal");
+    S.pendingSecondInnings = false;
+    S.innings = 2;
+    S.secondInningsStarted = true;
+    S.battingTeam = S.firstInnings.team === "A" ? "B" : "A";
+    S.bowlingTeam = S.battingTeam === "A" ? "B" : "A";
+    S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0; S.partnershipRuns=0; S.partnershipBalls=0;
+    S.extraDetail = { wide:0, noball:0, bye:0, legbye:0 };
+    S.batters = {}; S.bowlers = {};
+    S.striker = ""; S.nonStriker = ""; S.bowler = "";
+    S.started = false;
+    S.events.push(`▶ 2ND INNINGS — Target ${S.target}`);
+    await save();
+    render();
+    setTimeout(openStart, 300);
+  };
+
+  // ---- scoreRuns ----
+  window.scoreRuns = async function(runs) {
+    if (!S.started) { alert("Start the match first."); return; }
+    pushHistory();
+    const batter = battingStats(S.striker);
+    const bowler = bowlingStats(S.bowler);
+    batter.runs += runs; batter.balls++;
+    if (runs === 4) batter.fours++;
+    if (runs === 6) batter.sixes++;
+    S.runs += runs; S.partnershipRuns += runs; S.partnershipBalls += 1; bowler.runs += runs;
+    addLegalBall();
+    if (runs % 2 === 1) swapBatters();
+    if (runs === 4) await activateBroadcast("FOUR");
+    else if (runs === 6) await activateBroadcast("SIX");
+    S.events.push(`${oversText(S.legalBalls)} — ${runs} run`);
+    S.recentBalls = [...(S.recentBalls||[]), {over:oversText(S.legalBalls), label:String(runs), runs:runs, wicket:false}].slice(-24);
+    checkMatchResult();
+    if (S.started) await checkOver();
+    await save();
+    render();
+  };
+
+  // ---- extras ----
+  window.openExtra = function(type) {
+    if (!S.started) { alert("Start the match first."); return; }
+    extraType = type;
+    const title = { wide:"↔ WIDE — Additional Runs", noball:"🚫 NO BALL — Additional Runs", bye:"➰ BYE RUNS", legbye:"🦵 LEG BYE RUNS" };
+    $("extraTitle").textContent = title[type] || "Additional Runs";
+    openModal("extraModal");
+  };
+
+  let extraType = "wide";
+
+  window.confirmExtra = async function(total) {
+    closeModal("extraModal");
+    pushHistory();
+    const bowler = bowlingStats(S.bowler);
+    S.extras += total;
+    S.extraDetail[extraType] += total;
+    S.runs += total; S.partnershipRuns += total;
+    if (extraType === "wide" || extraType === "noball") {
+      bowler.runs += total;
+      if (total % 2 === 1) swapBatters();
+      S.events.push(`${extraType.toUpperCase()} — ${total}`);
+      S.recentBalls = [...(S.recentBalls||[]), {over:oversText(S.legalBalls), label:`${extraType.toUpperCase()} ${total}`, runs:total, wicket:false}].slice(-24);
+    } else {
+      S.partnershipBalls += 1;
+      addLegalBall();
+      if (total % 2 === 1) swapBatters();
+      S.events.push(`${extraType.toUpperCase()} — ${total}`);
+      S.recentBalls = [...(S.recentBalls||[]), {over:oversText(S.legalBalls), label:`${extraType.toUpperCase()} ${total}`, runs:total, wicket:false}].slice(-24);
+      await checkOver();
+    }
+    checkMatchResult();
+    await save();
+    render();
+  };
+
+  // ---- wicket ----
+  window.openWicket = function() {
+    if (!S.started) { alert("Start the match first."); return; }
+    options("dismissed", [S.striker, S.nonStriker].filter(Boolean));
+    $("runoutRuns").value = 0;
+    openModal("wicketModal");
+  };
+
+  window.confirmWicket = async function() {
+    const dismissed = $("dismissed").value;
+    const type = $("dismissType").value;
+    const runs = Math.max(0, Math.min(6, num($("runoutRuns").value)));
+    if (!dismissed) return;
+    closeModal("wicketModal");
+    pushHistory();
+    const batter = battingStats(dismissed);
+    const bowler = bowlingStats(S.bowler);
+    if (type === "Run Out" && runs > 0) {
+      S.runs += runs; S.partnershipRuns += runs; batter.runs += runs; bowler.runs += runs;
+      if (runs % 2 === 1) swapBatters();
+    }
+    batter.balls++; S.partnershipBalls += 1; batter.out = true; S.wickets++; addLegalBall();
+    if (type !== "Run Out") bowler.wickets++;
+    S.events.push(`WICKET — ${dismissed} (${type})`);
+    batter.dismissal = type;
+    S.fallWickets = [...(S.fallWickets||[]), {wicket:S.wickets, player:dismissed, score:S.runs, overs:oversText(S.legalBalls), type}];
+    S.recentBalls = [...(S.recentBalls||[]), {over:oversText(S.legalBalls), label:"W", runs:runs, wicket:true}].slice(-24);
+    await activateBroadcast(type === "Run Out" ? "RUN OUT" : "WICKET");
+    checkMatchResult();
+    if (S.innings === 1 && S.started && S.wickets >= 10) {
+      await finishInnings();
+    } else if (S.started) {
+      await checkOver();
+    }
+    await save();
+    render();
+    if (S.started && S.wickets < 10 && S.legalBalls < S.maxOvers*6) {
+      setTimeout(() => newBatter(dismissed), 300);
+    }
+  };
+
+  // ---- new batter ----
+  window.newBatter = function(dismissed="") {
+    const occupied = [S.striker, S.nonStriker].filter(Boolean);
+    const list = players(S.battingTeam).filter(p => !occupied.includes(p) && !battingStats(p).out);
+    if (!list.length) { alert("No unused batsman available."); return; }
+    options("newBatter", list);
+    S._dismissed = dismissed;
+    openModal("batterModal");
+  };
+
+  window.confirmBatter = async function() {
+    const batter = $("newBatter").value;
+    if (!batter) return;
+    const dismissed = S._dismissed;
+    if (dismissed && dismissed === S.nonStriker) S.nonStriker = batter;
+    else S.striker = batter;
+    delete S._dismissed;
+    battingStats(batter);
+    S.partnershipRuns = 0; S.partnershipBalls = 0;
+    closeModal("batterModal");
+    await save();
+    render();
+  };
+
+  // ---- bowler ----
+  window.openBowler = function(force=false) {
+    if (!S.started) { alert("Start the match first."); return; }
+    const list = players(S.bowlingTeam).filter(p => p !== S.bowler);
+    if (!list.length) { alert("No other bowler available."); return; }
+    options("newBowler", list);
+    $("bowlerInfo").textContent = force ? `Over ${oversText(S.legalBalls)} complete — select the next bowler.` : "Select a new bowler.";
+    openModal("bowlerModal");
+  };
+
+  window.confirmBowler = async function() {
+    const bowler = $("newBowler").value;
+    if (!bowler) return;
+    S.bowler = bowler;
+    bowlingStats(bowler);
+    closeModal("bowlerModal");
+    await save();
+    render();
+  };
+
+  window.endInnings = async function() {
+    if (!S.started) { alert("No live innings is running."); return; }
+    if (confirm("End this innings now?")) await finishInnings();
+  };
+
+  window.undo = async function() {
+    if (!S.history || !S.history.length) { alert("Nothing to undo."); return; }
+    const snap = JSON.parse(S.history.pop());
+    Object.assign(S, snap);
+    S.history = snap.history || [];
+    await save();
+    render();
+  };
+
+  function getDisplayUrl(){
+    const params = new URLSearchParams();
+    if (S.matchId) params.set("match", S.matchId);
+    if (S.theme) params.set("theme", S.theme);
+    if (S.tournament) params.set("tournament", S.tournament);
+    params.set("intro", "1");
+    const url = new URL("./overlay.html", location.href);
+    params.forEach((v,k) => url.searchParams.set(k,v));
+    return url.href;
+  }
+  window.refreshDisplayFrame = function(){
+    const f=$("liveDisplayFrame");
+    if(f) f.src=getDisplayUrl();
+  };
+  window.openDisplayScreen = function() {
+    const url=getDisplayUrl();
+    const f=$("liveDisplayFrame"); if(f && f.src !== url) f.src=url;
+    const w = window.open(url, "BRKLIVE19_DISPLAY");
+    if (!w) alert("Display is already available in the Live Display Screen above. Allow pop-ups if you want a separate full-screen window.");
+  };
+
+  window.saveNow = async function() {
+    await save();
+    alert("✅ Saved! Display screen updated.");
+  };
+
+  // ---- broadcast ----
+  async function activateBroadcast(type) {
+    const eventId = String(Date.now()) + "-" + Math.random().toString(36).slice(2,8);
+    S.broadcast = { type, text:type, active:true, id:eventId, eventId:eventId };
+    await save();
+    setTimeout(async () => {
+      if (S.broadcast && S.broadcast.id === eventId) {
+        S.broadcast = { ...S.broadcast, active:false };
+        try { await save(); } catch(e) {}
+        render();
+      }
+    }, 1200);
+    return eventId;
+  }
+
+  window.broadcastEvent = async function(type) {
+    // Graphics buttons (FOUR/SIX/WICKET/FREE HIT/HAT-TRICK) are allowed even
+    // when the scorer is not currently running, so the operator can test the display.
+    if (!S.started && !["FREE HIT","HAT-TRICK BALL","FOUR","SIX","WICKET","RUN OUT"].includes(String(type).toUpperCase())) { alert("Start the match first."); return; }
+    await activateBroadcast(type);
+    render();
+  };
+
+  // ---- overlay controls ----
+  function ensureOverlayState(){
+    if(!S.overlay) S.overlay = {};
+    S.overlay = {
+      showTournament:!!S.overlay.showTournament,
+      showVenue:!!S.overlay.showVenue,
+      showMatch:!!S.overlay.showMatch,
+      showToss:!!S.overlay.showToss,
+      showResult:!!S.overlay.showResult,
+      showTarget:!!S.overlay.showTarget,
+      showBowler:!!S.overlay.showBowler,
+      positions:S.overlay.positions||{tournament:"upper",match:"middle",toss:"middle",custom:"upper"},
+      scoreVisible: S.overlay.scoreVisible !== false,
+      intro: S.overlay.intro === true,
+      introDismissedAt: Number(S.overlay.introDismissedAt)||0,
+      playerLower:S.overlay.playerLower||{active:false,slot:"",player:""},
+      partnership:S.overlay.partnership||{active:false}
+    };
+  }
+
+  window.toggleTargetOverlay = async function() {
+    ensureOverlayState();
+    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
+    if (S.innings !== 2 || !S.target || S.status === "completed") { alert("Target display is available during the 2nd innings only."); return; }
+    S.overlay.showTarget = !S.overlay.showTarget;
+    await save();
+    render();
+  };
+
+  window.toggleOverlayBanner = async function(type) {
+    ensureOverlayState();
+    S.overlay.intro = false;
+    S.overlay.introDismissedAt = Date.now();
+    S.overlay.scoreVisible = true;
+    const key = type === "tournament" ? "showTournament" : type === "venue" ? "showVenue" : type === "match" ? "showMatch" : type === "result" ? "showResult" : "showToss";
+    S.overlay[key] = !S.overlay[key];
+    await save();
+    render();
+  };
+
+  window.togglePlayerLower = async function(which) {
+    ensureOverlayState();
+    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
+    const name = which === "b1" ? (S.striker || "") : (S.nonStriker || "");
+    if(!name) { alert(which==="b1" ? "B1/striker not selected." : "B2/non-striker not selected."); return; }
+    if(S.overlay.playerLower.active && S.overlay.playerLower.slot === which) {
+      S.overlay.playerLower = { active:false, slot:"", player:"" };
+    } else {
+      S.overlay.playerLower = { active:true, slot:which, player:name };
+    }
+    await save();
+    render();
+  };
+
+  window.hidePlayerLower = async function() {
+    ensureOverlayState();
+    S.overlay.playerLower = { active:false, slot:"", player:"" };
+    await save();
+    render();
+  };
+
+  window.togglePartnership = async function() {
+    ensureOverlayState();
+    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
+    if (!S.striker || !S.nonStriker) { alert("Select both current batters first."); return; }
+    S.overlay.partnership.active = !S.overlay.partnership.active;
+    await save();
+    render();
+  };
+
+  window.resetMatch = async function() {
+    if (!confirm("Reset the complete match score? This cannot be undone.")) return;
+    const keep = {
+      tournament:S.tournament, venue:S.venue, matchName:S.matchName, teamA:S.teamA, teamB:S.teamB,
+      tossWinner:S.tossWinner, tossDecision:S.tossDecision, xiA:[...(S.xiA||[])], xiB:[...(S.xiB||[])], maxOvers:S.maxOvers,
+      matchId:S.matchId
+    };
+    S = { ...createDefaultState(), ...keep };
+    await save();
+    render();
+    alert("♻️ Match reset successfully.");
+  };
+
+  window.showCustomLower = async function() {
+    const text = $("customLowerText").value.trim();
+    if (!text) { alert("Enter a lower-third message first."); return; }
+    S.customLower = { text, active:true };
+    $("lowerPreview").textContent = text;
+    await save();
+    render();
+  };
+
+  window.hideCustomLower = async function() {
+    S.customLower = { text:"", active:false };
+    $("lowerPreview").textContent = "Preview";
+    await save();
+    render();
+  };
+
+  window.showInningsScoreboard = async function(inningsNo) {
+    ensureOverlayState();
+    S.overlay.intro = false;
+    S.overlay.introDismissedAt = Date.now();
+    S.overlay.scoreVisible = true;
+    if (Number(inningsNo) === 2 && S.innings < 2) {
+      alert("2nd innings has not started yet.");
+      return;
+    }
+    S.mode = Number(inningsNo) === 1 ? 'scorecard1' : 'scorecard2';
+    await save();
+    render();
+  };
+
+  window.setMode = async function(mode) {
+    ensureOverlayState();
+    if (mode === 'scorecard') { await toggleScoreboard(); return; }
+    if (mode === 'bowler') {
+      S.overlay.intro = false;
+      S.overlay.introDismissedAt = Date.now();
+      S.overlay.scoreVisible = true;
+      S.mode = 'default';
+      S.overlay.showBowler = !S.overlay.showBowler;
+      await save();
+      render();
+      return;
+    }
+    if (mode === 'default') {
+      S.mode='default';
+      S.overlay.intro = false;
+      S.overlay.introDismissedAt = Date.now();
+      S.overlay.showTournament = false;
+      S.overlay.scoreVisible = true;
+      await save(); render(); return;
+    }
+    S.mode = mode;
+    S.overlay.intro = false;
+    S.overlay.introDismissedAt = Date.now();
+    S.overlay.scoreVisible = true;
+    await save();
+    render();
+  };
+
+  window.openThemePage = function(){
+    const params = new URLSearchParams();
+    if (S.matchId) params.set('match', S.matchId);
+    if (S.tournament) params.set('tournament', S.tournament);
+    if (S.theme) params.set('selected', S.theme);
+    window.location.href = './themes.html' + (params.toString() ? '?' + params.toString() : '');
+  };
+
+  window.setTheme = async function(theme) {
+    S.theme = theme;
+    try { localStorage.setItem("brklive19_pending_theme", theme); } catch(e) {}
+    document.querySelectorAll('.theme').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
+    await save();
+    render();
+  };
+
+  window.setCustomTheme = async function() {
+    const primary = document.getElementById('customPrimaryColor').value;
+    const secondary = document.getElementById('customSecondaryColor').value;
+    const deepBlue = document.getElementById('customDeepBlueColor')?.value || '#071a58';
+    if (!primary) { alert('Please select a primary color.'); return; }
+    S.theme = 'custom';
+    const summaryBg = document.getElementById("customSummaryBgColor")?.value || "#07101f";
+    S.customColors = { primary, secondary, deepBlue, accent: deepBlue, summaryBg };
+    await save();
+    render();
+    alert('✅ Custom overlay colors applied!');
+  };
+
+  window.applyDesignerTheme = async function() {
+    const customColors = {
+      primary: document.getElementById('designerHighlight').value,
+      secondary: document.getElementById('designerAccent').value,
+      accent: document.getElementById('designerMain').value,
+      deepBlue: document.getElementById('designerDark').value,
+      summaryBg: document.getElementById('designerDark').value
+    };
+    S.theme = 'custom';
+    S.customColors = customColors;
+    await save();
+    render();
+    alert('✅ Custom complete cricket theme applied to overlay, summary and scorecard!');
+  };
+
+  // ---- checkMatchResult ----
+  function completeMatch(winner, result) {
+    ensureOverlayState();
+    S.started = false;
+    S.status = "completed";
+    S.matchWinner = winner || "";
+    S.matchResult = result;
+    S.resultText = result;
+    S.mode = "default";
+    S.overlay.showTournament = false;
+    S.overlay.showVenue = false;
+    S.overlay.showMatch = false;
+    S.overlay.showToss = false;
+    S.overlay.showBowler = false;
+    S.overlay.showResult = true;
+    S.overlay.playerLower = {active:false,slot:"",player:""};
+    S.overlay.partnership = {active:false};
+    S.events.push(`🏆 ${result}`);
+  }
+
+  function checkMatchResult() {
+    if (S.innings !== 2 || !S.target || S.status === "completed") return S.status === "completed";
+    const chasing = teamName(S.battingTeam);
+    const defending = teamName(S.firstInnings.team);
+    const need = S.target - S.runs;
+    const balls = legalBallsRemaining();
+
+    if (need <= 0) {
+      const wicketsLeft = Math.max(10 - S.wickets, 0);
+      completeMatch(chasing, `${chasing} WON BY ${wicketsLeft} WICKETS`);
+      return true;
+    }
+
+    if (S.wickets >= 10 || balls <= 0) {
+      if (need === 1) completeMatch("", "MATCH TIED");
+      else {
+        const margin = Math.max(S.target - 1 - S.runs, 0);
+        completeMatch(defending, `${defending} WON BY ${margin} RUNS`);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  // ---- modal helpers ----
+  function openModal(id) { $(id).classList.add("show"); }
+  window.closeModal = function(id) { $(id).classList.remove("show"); };
+
+  // ---- render ----
+  function render() {
+    const customPreview = $("lowerPreview"); if (customPreview) customPreview.textContent = (S.customLower&&S.customLower.active) ? S.customLower.text : "Preview";
+    const statusEl = $("status");
+    if (statusEl) {
+      statusEl.textContent = firebaseReady ? "🟢 Firebase Connected • Auto-Save ON" : "🟡 Local Mode • Auto-Save ON";
+      statusEl.className = "status ok";
+    }
+
+    const batShort = teamShort(S.battingTeam);
+    const bowlShort = teamShort(S.bowlingTeam);
+
+    if (S.status === "completed" && S.resultText) {
+      $("matchStatus").textContent = `🏆 ${S.resultText}`;
+    } else if (S.started) {
+      $("matchStatus").textContent =
+        `🟢 LIVE — ${teamName(S.battingTeam)} (${batShort}) ${S.runs}/${S.wickets} (${oversText(S.legalBalls)}) • ${S.striker||"—"} / ${S.nonStriker||"—"} • ${S.bowler||"—"}`;
+    } else {
+      $("matchStatus").textContent = S.innings === 2 ? `⏸ 2ND INNINGS READY • Target ${S.target}` : "⏸ Match not started";
+    }
+
+    $("liveScore").textContent = `${S.runs}/${S.wickets}`;
+    $("liveOvers").textContent = `${oversText(S.legalBalls)} OV`;
+
+    // Target display with "To Win Need ___ runs From ___ balls"
+    if (S.status === "completed" && S.resultText) {
+      $("targetText").innerHTML = `🏆 <b>${escapeHTML(S.resultText)}</b>`;
+    } else if (S.innings === 2 && S.target && S.started) {
+      const need = runsToWin();
+      const balls = legalBallsRemaining();
+      $("targetText").innerHTML = `<b>${escapeHTML(teamName(S.battingTeam))} (${escapeHTML(batShort)}) NEED ${need} RUN${need===1?"":"S"} FROM ${balls} BALL${balls===1?"":"S"}</b>`;
+    } else if (S.innings === 2 && S.target) {
+      $("targetText").innerHTML = `<b>Target ${S.target} • ${escapeHTML(teamName(S.battingTeam))} (${escapeHTML(batShort)}) to chase</b>`;
+    } else {
+      $("targetText").textContent = `FIRST INNINGS • ${escapeHTML(teamName(S.battingTeam))} (${escapeHTML(batShort)}) batting`;
+    }
+
+    $("liveMeta").textContent = `${teamName(S.battingTeam)} (${batShort}) batting • ${teamName(S.bowlingTeam)} (${bowlShort}) bowling • ${S.innings===1 ? "1ST" : "2ND"} INNINGS`;
+    $("crr").textContent = currentRunRate().toFixed(2);
+    $("rrr").textContent = requiredRunRate().toFixed(2);
+    $("extras").textContent = S.extras;
+
+    const b1 = battingStats(S.striker);
+    const b2 = battingStats(S.nonStriker);
+    const bow = bowlingStats(S.bowler);
+    $("b1label").textContent = "🏏 " + (S.striker || "Striker");
+    $("b1stat").textContent = `${b1.runs} (${b1.balls}) • 4s ${b1.fours} • 6s ${b1.sixes}`;
+    $("b2stat").textContent = `${S.nonStriker || "Non-Striker"}: ${b2.runs} (${b2.balls}) • 4s ${b2.fours} • 6s ${b2.sixes}`;
+    $("bowlerLabel").textContent = "🎯 " + (S.bowler || "Bowler");
+    $("bowlerStat").textContent =
+      `${oversText(bow.balls)} O • ${bow.runs} R • ${bow.wickets} W • Eco ${bow.balls ? (bow.runs/(bow.balls/6)).toFixed(2) : "0.00"}`;
+
+    document.querySelectorAll('.theme').forEach(b => b.classList.toggle('active', b.dataset.theme === S.theme));
+  }
+
+  // ---- URL match bridge / initial load ----
+  populateMatchSelector();
+
+  // Load the match selected by Index before Firebase can push an old liveScore record.
+  const bridged = loadMatchFromUrl() || loadMatchBridge();
+
+  // ---- Firebase listener ----
+  if (liveRef) {
+    onValue(liveRef, snapshot => {
+      const data = snapshot.val();
+      if (!data) { render(); return; }
+
+      // Ignore live data belonging to a different match.
+      if (S.matchId && data.matchId && data.matchId !== S.matchId) return;
+
+      if (syncing) return;
+
+      // Preserve the Index bridge if the Firebase record is missing those fields.
+      const current = S;
+      const preferredTheme = urlTheme || current.theme || 'blue';
+      S = { ...createDefaultState(), ...data };
+      if (preferredTheme) S.theme = preferredTheme;
+      if (!S.teamA) S.teamA = current.teamA;
+      if (!S.teamB) S.teamB = current.teamB;
+      if (!S.tournament) S.tournament = current.tournament;
+      if (!S.venue) S.venue = current.venue;
+      if (!S.matchName) S.matchName = current.matchName;
+      if (!S.xiA?.length) S.xiA = current.xiA || [];
+      if (!S.xiB?.length) S.xiB = current.xiB || [];
+      if (!S.matchId) S.matchId = current.matchId;
+      if (!S.status) S.status = "live";
+      render();
+    }, error => {
+      console.error("Firebase error:", error);
+      const el = $("status");
+      if (el) {
+        el.textContent = "🔴 Firebase error — check Database Rules / Internet";
+        el.className = "status";
+      }
+    });
+  }
+
+  if (bridged) render();
+
+  // ---- Continue match selector setup ----
+  function loadMatchFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get("matchData");
+    const matchId = params.get("match");
+
+    let match = null;
+
+    // Preferred: Index sends the complete match bridge in the URL.
+    if (encoded) {
+      try {
+        match = JSON.parse(decodeURIComponent(encoded));
+      } catch (e) {
+        console.warn("Could not decode matchData URL parameter.", e);
+      }
+    }
+
+    // Fallback: same-origin localStorage match record.
+    if (!match && matchId) {
+      const matches = getAllMatches();
+      match = matches.find(m => m.id === matchId) || null;
+    }
+
+    if (!match) return false;
+
+    currentMatchId = match.id || matchId || "";
+    const bridge = {
+      tournament: match.tournamentName || match.tournament || '',
+      tournamentName: match.tournamentName || match.tournament || '',
+      tournamentVenue: match.tournamentVenue || '',
+      venue: match.venue || match.tournamentVenue || '',
+      matchName: match.matchName || `${match.teamAName || match.teamA || 'Team A'} vs ${match.teamBName || match.teamB || 'Team B'}`,
+      teamA: match.teamAName || match.teamA || 'Team A',
+      teamB: match.teamBName || match.teamB || 'Team B',
+      maxOvers: Number(match.maxOvers) || 20,
+      tossWinner: match.tossWinner === 'teamA' ? 'A' : (match.tossWinner === 'teamB' ? 'B' : (match.tossWinner || '')),
+      tossDecision: match.tossDecision || 'bat',
+      xiA: Array.isArray(match.xiTeamA) ? match.xiTeamA : (Array.isArray(match.xiA) ? match.xiA : []),
+      xiB: Array.isArray(match.xiTeamB) ? match.xiTeamB : (Array.isArray(match.xiB) ? match.xiB : []),
+      matchId: currentMatchId
+    };
+
+    localStorage.setItem('brklive19_score_bridge', JSON.stringify(bridge));
+    loadMatchBridge(currentMatchId);
+    S.matchId = currentMatchId;
+    return true;
+  }
+
+  // ---- selector continuation ----
+  if (bridged) {
+    render();
+    // If no match ID set, try to find in selector
+    if (!S.matchId) {
+      const sel = $('matchSelector');
+      if (sel && sel.options.length > 1) {
+        // Try to match by team names
+        for (let i = 0; i < sel.options.length; i++) {
+          const opt = sel.options[i];
+          if (opt.value && opt.text.includes(S.teamA) && opt.text.includes(S.teamB)) {
+            sel.value = opt.value;
+            currentMatchId = opt.value;
+            S.matchId = opt.value;
+            break;
+          }
+        }
+      }
+    }
+    render();
+  } else {
+    render();
+  }
+
+  setTimeout(() => {
+    if (S.innings === 1 && S.pendingSecondInnings && S.firstInnings && S.firstInnings.team) {
+      const next = S.firstInnings.team === "A" ? "B" : "A";
+      $("secondInningsMatch").textContent = `${S.matchName || `${S.teamA} vs ${S.teamB}`} • ${Number(S.maxOvers || 0)} overs per innings`;
+      $("secondInningsSummary").innerHTML =
+        `<b>${escapeHTML(teamName(S.firstInnings.team))}</b> scored <b>${S.firstInnings.runs}/${S.firstInnings.wickets}</b> in <b>${oversText(S.firstInnings.balls || 0)}</b> overs<br>` +
+        `Target for <b>${escapeHTML(teamName(next))}</b>: <b>${S.target}</b>`;
+      openModal("secondInningsModal");
+    }
+  }, 300);
+
+  // ---- Handle URL view param ----
+  const requestedView = new URLSearchParams(window.location.search).get("view");
+  if (requestedView) {
+    setTimeout(async () => {
+      try {
+        if (requestedView === "scorecard1") await showInningsScoreboard(1);
+        else if (requestedView === "scorecard2") await showInningsScoreboard(2);
+        else if (requestedView === "b1") await togglePlayerLower("b1");
+        else if (requestedView === "b2") await togglePlayerLower("b2");
+      } catch(e) { console.error("Requested view failed:", e); }
+    }, 700);
+  }
+
+  // Make functions globally available
+  window.teamShort = teamShort;
+  window.teamName = teamName;
+
+
+  /* ===== FINAL LOWER-THIRD CONTROL: authoritative one-button views ===== */
+  function finalOverlayReset(){
+    ensureOverlayState();
+    S.mode='default';
+    S.overlay.intro=false;
+    S.overlay.introDismissedAt=Date.now();
+    S.overlay.scoreVisible=true;
+    S.overlay.showTournament=false; S.overlay.showVenue=false; S.overlay.showMatch=false;
+    S.overlay.showToss=false; S.overlay.showResult=false; S.overlay.showBowler=false;
+    S.overlay.playerLower={active:false,slot:'',player:''};
+    S.overlay.partnership={active:false};
+  }
+  async function finalPublish(){ S.updatedAt=Date.now(); await save(); render(); }
+  window.toggleOverlayBanner=async function(type){
+    finalOverlayReset();
+    const key=type==='tournament'?'showTournament':type==='venue'?'showVenue':type==='match'?'showMatch':type==='result'?'showResult':'showToss';
+    S.overlay[key]=true;
+    await finalPublish();
+  };
+  window.togglePlayerLower=async function(which){
+    finalOverlayReset();
+    const name=which==='b1'?(S.striker||''):(S.nonStriker||'');
+    if(!name){alert(which==='b1'?'Select B1/striker first.':'Select B2/non-striker first.');return;}
+    S.overlay.playerLower={active:true,slot:which,player:name};
+    await finalPublish();
+  };
+  window.setMode=async function(mode){
+    finalOverlayReset();
+    if(mode==='scorecard'||mode==='scorecard1'||mode==='scorecard2') S.mode=mode;
+    else if(mode==='bowler') S.overlay.showBowler=true;
+    /* DEFAULT always means the normal score lower-third. */
+    await finalPublish();
+  };
+  window.broadcastEvent=async function(type){
+    const up=String(type).toUpperCase();
+    const allowed=['FREE HIT','HAT-TRICK BALL','FOUR','SIX','WICKET','RUN OUT'];
+    if(!S.started&&!allowed.includes(up)){alert('Start the match first.');return;}
+    finalOverlayReset();
+    const id=String(Date.now())+'-'+Math.random().toString(36).slice(2,10);
+    S.broadcast={type:up,text:up,active:true,id,eventId:id};
+    S.events=[...(S.events||[]),`🎬 ${up}`];
+    await finalPublish();
+    setTimeout(async()=>{if(S.broadcast&&S.broadcast.id===id){S.broadcast={...S.broadcast,active:false};await save();render();}},2800);
+  };
+  /* Automatic flow: Theme -> Tournament. Loading a match -> Match. 5 seconds -> Toss. */
+  function finalAutoIntro(){
+    clearTimeout(window.__brkIntroTimer);
+    ensureOverlayState();
+    if(S.tournament){
+      finalOverlayReset(); S.overlay.showTournament=true; save(); render();
+    }
+    if(S.teamA&&S.teamB){
+      finalOverlayReset(); S.overlay.showMatch=true; save(); render();
+      window.__brkIntroTimer=setTimeout(async()=>{
+        if(S.tossWinner){ finalOverlayReset(); S.overlay.showToss=true; await save(); render(); }
+      },5000);
+    }
+  }
+  setTimeout(finalAutoIntro,450);
+
+  console.log("BRKLIVE19 V4 Scorer loaded.");
+</script>
+</body>
+</html>
