@@ -661,6 +661,10 @@ textarea{min-height:130px;resize:vertical}
 
   // ---- Save ----
   async function save() {
+    // ALWAYS push the newest scorer state to the open overlay immediately.
+    // This is intentionally done before Firebase so the display works in
+    // local-file mode and never waits for a network round-trip.
+    try { publishLocalBridge(S); } catch(e) {}
     try { if (S.matchId) localStorage.setItem("brklive19_match_state_" + S.matchId, JSON.stringify(S)); } catch(e) {}
     if (!firebaseReady || !liveRef) {
       publishLocalBridge(S);
@@ -722,6 +726,7 @@ textarea{min-height:130px;resize:vertical}
         el.className = "status";
       }
     } finally {
+      try { publishLocalBridge(S); } catch(e) {}
       syncing = false;
     }
   }
@@ -1035,7 +1040,6 @@ textarea{min-height:130px;resize:vertical}
     if (S.matchId) params.set("match", S.matchId);
     if (S.theme) params.set("theme", S.theme);
     if (S.tournament) params.set("tournament", S.tournament);
-    params.set("intro", "1");
     const url = new URL("./overlay.html", location.href);
     params.forEach((v,k) => url.searchParams.set(k,v));
     return url.href;
