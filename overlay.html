@@ -1639,10 +1639,29 @@ const requestedTournament = urlParams.get("tournament") || "";
 const requestedTheme = urlParams.get("theme") || "";
 // A tournament-bearing browser-source URL starts in the tournament lower-third.
 // DEFAULT from Scorer explicitly dismisses this intro.
-const requestedIntro = requestedIntroKey > 0 || !!requestedTournament;
+const requestedIntro = false;
 let previousEventSignature="",previousBroadcastSignature="",animationTimer=null,animationBooted=false;
 let liveChannel=null;
 try { liveChannel=new BroadcastChannel("BRKLIVE19_LIVE_OVERLAY"); } catch(e) { liveChannel=null; }
+
+// Direct scorer/index -> overlay bridge. This makes button presses appear
+// immediately even when Firebase is slow and when the project is opened locally.
+window.addEventListener("message", e => {
+  try {
+    const p=e && e.data;
+    if(p && p.type === "BRKLIVE19_LIVE_SCORE" && p.data) {
+      applyLiveData(p.data);
+      try { if(e.source) e.source.postMessage({type:"BRKLIVE19_OVERLAY_ACK"}, "*"); } catch(err){}
+    }
+  } catch(err) { console.warn("Direct overlay bridge error",err); }
+});
+
+function announceOverlayReady(){
+  const msg={type:"BRKLIVE19_OVERLAY_READY",matchId:requestedMatchId||""};
+  try { if(window.opener) window.opener.postMessage(msg,"*"); } catch(e){}
+  try { if(window.parent && window.parent !== window) window.parent.postMessage(msg,"*"); } catch(e){}
+}
+setTimeout(announceOverlayReady,80);
 
 function oversFromBalls(b){b=num(b);return Math.floor(b/6)+"."+(b%6)}
 function teamName(d,s){return s==="A"?(d.teamA||"TEAM A"):(d.teamB||"TEAM B")}
@@ -2187,13 +2206,21 @@ setInterval(applyLocalLiveScore, 1000);
 
 // Firebase is the main cross-device transport. Listen to both the legacy global
 // path and the newer per-match path so the overlay keeps updating reliably.
-onValue(liveRef, snap => applyLiveData(snap.val()), error => {
-  console.warn("Firebase global overlay listener unavailable; local/channel bridge remains active.", error);
-  applyLocalLiveScore();
-});
+if (firebaseReady && liveRef) {
+  onValue(liveRef, snap => applyLiveData(snap.val()), error => {
+    console.warn("Firebase global overlay listener unavailable; local/channel bridge remains active.", error);
+    applyLocalLiveScore();
+  });
+}
 try {
-  const matchRef = requestedMatchId ? ref(db, "liveScoreByMatch/" + encodeURIComponent(String(requestedMatchId))) : null;
-  if (matchRef) onValue(matchRef, snap => applyLiveData(snap.val()), error => console.warn("Per-match overlay listener unavailable", error));
+  const matchRef = firebaseReady && db && requestedMatchId
+    ? ref(db, "liveScoreByMatch/" + encodeURIComponent(String(requestedMatchId)))
+    : null;
+  if (matchRef) {
+    onValue(matchRef, snap => applyLiveData(snap.val()), error =>
+      console.warn("Per-match overlay listener unavailable",error)
+    );
+  }
 } catch(e) { console.warn("Could not attach per-match overlay listener",e); }
 </script>
 
