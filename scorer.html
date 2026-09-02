@@ -1035,7 +1035,7 @@ textarea{min-height:130px;resize:vertical}
     if (S.matchId) params.set("match", S.matchId);
     if (S.theme) params.set("theme", S.theme);
     if (S.tournament) params.set("tournament", S.tournament);
-    params.set("intro", "0");
+    params.set("intro", "1");
     const url = new URL("./overlay.html", location.href);
     params.forEach((v,k) => url.searchParams.set(k,v));
     return url.href;
