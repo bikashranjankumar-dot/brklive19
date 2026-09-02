@@ -2817,6 +2817,7 @@
                 if (matchId) params.set('match', matchId);
                 params.set('intro', String(Date.now()));
                 if (tournamentName) params.set('tournament', tournamentName);
+                params.set('bridge', '3');
                 input.value = base + '?' + params.toString();
             }
 
