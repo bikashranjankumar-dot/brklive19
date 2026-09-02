@@ -1639,7 +1639,7 @@ const requestedTournament = urlParams.get("tournament") || "";
 const requestedTheme = urlParams.get("theme") || "";
 // A tournament-bearing browser-source URL starts in the tournament lower-third.
 // DEFAULT from Scorer explicitly dismisses this intro.
-const requestedIntro = false;
+const requestedIntro = requestedIntroKey > 0 || !!requestedTournament;
 let previousEventSignature="",previousBroadcastSignature="",animationTimer=null,animationBooted=false;
 let liveChannel=null;
 try { liveChannel=new BroadcastChannel("BRKLIVE19_LIVE_OVERLAY"); } catch(e) { liveChannel=null; }
@@ -3451,4 +3451,15 @@ body{padding:0!important;display:flex!important;align-items:flex-end!important;j
 <style id="BRKLIVE19-OVERLAY-DOWN-FIX">
 /* Requested: move the normal cricket lower-third slightly downward. */
 body:not(.theme-theme5) #overlay{bottom:0!important;}
+</style>
+<style id="BRKLIVE19-REMOVE-TEAM-B-BLACK-SPOT">
+/* Remove the unwanted dark/black circular spot beside Team B. */
+#overlay .refLogoRight,
+#overlay .refLogoRight span,
+#overlay .teamPanel.right .refLogo,
+#overlay .teamPanel.right .refLogo span{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
 </style>
