@@ -394,6 +394,20 @@ textarea{min-height:130px;resize:vertical}
   let liveChannel = null;
   try { liveChannel = new BroadcastChannel("BRKLIVE19_LIVE_OVERLAY"); } catch(e) { liveChannel = null; }
 
+  // Direct scorer -> overlay bridge. This is the most reliable path when both
+  // pages are open from the same project/folder, including file:// mode.
+  let brkOverlayWindow = null;
+  function publishWindowBridge(data){
+    const packet = { ...data, __brklive19Bridge:true, __bridgeVersion:3, __bridgeUpdatedAt:Date.now() };
+    try { if (brkOverlayWindow && !brkOverlayWindow.closed) brkOverlayWindow.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:packet},"*"); } catch(e){}
+    try { if (window.opener) window.opener.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:packet},"*"); } catch(e){}
+  }
+  window.addEventListener("message", e => {
+    if(e && e.data && e.data.type === "BRKLIVE19_OVERLAY_READY"){
+      try { e.source && e.source.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:{...S,__brklive19Bridge:true,__bridgeVersion:3,__bridgeUpdatedAt:Date.now()}}, "*"); } catch(err){}
+    }
+  });
+
   // Robust cross-tab bridge. Firebase is preferred, but localStorage polling
   // and BroadcastChannel keep the overlay responsive when the project is
   // opened directly from a ZIP/file on the same device.
@@ -403,6 +417,7 @@ textarea{min-height:130px;resize:vertical}
     try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(packet)); } catch(e) {}
     try { localStorage.setItem("brklive19_liveScore_tick", String(Date.now())); } catch(e) {}
     try { if (liveChannel) liveChannel.postMessage({type:"LIVE_SCORE", data:packet}); } catch(e) {}
+    publishWindowBridge(packet);
   }
 
   // ---- Helpers ----
@@ -1020,20 +1035,31 @@ textarea{min-height:130px;resize:vertical}
     if (S.matchId) params.set("match", S.matchId);
     if (S.theme) params.set("theme", S.theme);
     if (S.tournament) params.set("tournament", S.tournament);
-    params.set("intro", "1");
+    params.set("intro", "0");
     const url = new URL("./overlay.html", location.href);
     params.forEach((v,k) => url.searchParams.set(k,v));
     return url.href;
   }
   window.refreshDisplayFrame = function(){
     const f=$("liveDisplayFrame");
-    if(f) f.src=getDisplayUrl();
+    if(f) {
+      f.src=getDisplayUrl();
+      setTimeout(() => {
+        try { f.contentWindow && f.contentWindow.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:{...S,__brklive19Bridge:true,__bridgeVersion:3,__bridgeUpdatedAt:Date.now()}}, "*"); } catch(e){}
+      }, 400);
+    }
   };
   window.openDisplayScreen = function() {
     const url=getDisplayUrl();
     const f=$("liveDisplayFrame"); if(f && f.src !== url) f.src=url;
     const w = window.open(url, "BRKLIVE19_DISPLAY");
-    if (!w) alert("Display is already available in the Live Display Screen above. Allow pop-ups if you want a separate full-screen window.");
+    if (w) {
+      brkOverlayWindow = w;
+      setTimeout(() => publishWindowBridge(S), 150);
+      setTimeout(() => publishWindowBridge(S), 700);
+    } else {
+      alert("Display is already available in the Live Display Screen above. Allow pop-ups if you want a separate full-screen window.");
+    }
   };
 
   window.saveNow = async function() {
