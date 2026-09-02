@@ -1650,7 +1650,11 @@ window.addEventListener("message", e => {
   try {
     const p=e && e.data;
     if(p && p.type === "BRKLIVE19_LIVE_SCORE" && p.data) {
-      applyLiveData(p.data);
+      const incoming = p.data;
+      // Direct scorer messages are authoritative for this display. Do not let
+      // an older Firebase snapshot hide/replace a fresh button press.
+      lastBridgeUpdate = Math.max(lastBridgeUpdate, Number(incoming.__bridgeUpdatedAt)||Date.now());
+      applyLiveData(incoming);
       try { if(e.source) e.source.postMessage({type:"BRKLIVE19_OVERLAY_ACK"}, "*"); } catch(err){}
     }
   } catch(err) { console.warn("Direct overlay bridge error",err); }
@@ -2160,6 +2164,8 @@ function buildInitialOverlayData(){
   if(requestedTournament)d.tournament=requestedTournament;
   if(requestedTheme)d.theme=requestedTheme;
   d.overlay={...(d.overlay||{}),intro:requestedIntro && !(d.overlay&&d.overlay.introDismissedAt),scoreVisible:requestedIntro?false:true,showTournament:requestedIntro||!!(d.overlay&&d.overlay.showTournament)};
+  // A normal Overlay URL must always render the main display immediately.
+  if(!requestedIntro) { d.overlay.intro=false; d.overlay.scoreVisible=true; }
   return d;
 }
 applyLiveData(buildInitialOverlayData());
@@ -3451,15 +3457,4 @@ body{padding:0!important;display:flex!important;align-items:flex-end!important;j
 <style id="BRKLIVE19-OVERLAY-DOWN-FIX">
 /* Requested: move the normal cricket lower-third slightly downward. */
 body:not(.theme-theme5) #overlay{bottom:0!important;}
-</style>
-<style id="BRKLIVE19-REMOVE-TEAM-B-BLACK-SPOT">
-/* Remove the unwanted dark/black circular spot beside Team B. */
-#overlay .refLogoRight,
-#overlay .refLogoRight span,
-#overlay .teamPanel.right .refLogo,
-#overlay .teamPanel.right .refLogo span{
-  display:none!important;
-  visibility:hidden!important;
-  opacity:0!important;
-}
 </style>
