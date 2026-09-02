@@ -66,8 +66,6 @@ textarea{min-height:130px;resize:vertical}
 .themeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .theme{padding:12px;border-radius:12px;border:2px solid #2c3755;background:#12192b;color:#fff;font-weight:800;cursor:pointer}
 .theme.active{border-color:var(--cyan);box-shadow:0 0 15px #00eaff55}
-.theme-ipl,.theme-t20world,.theme-odiworld,.theme-champions,.theme-sa,.theme-delhi{position:relative;overflow:hidden;background-size:200% 100%;animation:themeMove 3s linear infinite}.theme-ipl{background:linear-gradient(135deg,#0b2c8a,#1a8cff,#e4a900)}.theme-t20world{background:linear-gradient(135deg,#06143f,#0e70d8,#50dcff)}.theme-odiworld{background:linear-gradient(135deg,#064b95,#19a9ff,#f1c600)}.theme-champions{background:linear-gradient(135deg,#171a67,#6d38d4,#f1c63d)}.theme-sa{background:linear-gradient(135deg,#07582c,#0bb45d,#e3c400)}.theme-delhi{background:linear-gradient(135deg,#72102e,#d92e5c,#f0b600)}@keyframes themeMove{0%{background-position:0 0}50%{background-position:100% 0}100%{background-position:0 0}}
-.theme-ipl,.theme-t20world,.theme-odiworld,.theme-champions,.theme-sa,.theme-delhi{box-shadow:inset 0 1px #fff7,0 0 18px #0008}.theme-ipl:after,.theme-t20world:after,.theme-odiworld:after,.theme-champions:after,.theme-sa:after,.theme-delhi:after{content:"";position:absolute;inset:-40% -15%;background:linear-gradient(110deg,transparent 35%,#fff4 48%,transparent 60%);transform:translateX(-70%);animation:themeSweep 2.8s ease-in-out infinite;pointer-events:none}@keyframes themeSweep{0%,30%{transform:translateX(-70%)}70%,100%{transform:translateX(70%)}}
 .modal{display:none;position:fixed;inset:0;background:#000c;z-index:100;align-items:center;justify-content:center;padding:16px}
 .modal.show{display:flex}
 .modalBox{width:min(560px,100%);max-height:90vh;overflow:auto;background:#11182a;border:1px solid #3b4d75;border-radius:18px;padding:18px;box-shadow:0 25px 80px #000}
@@ -120,25 +118,7 @@ textarea{min-height:130px;resize:vertical}
   .match-selector{flex-direction:column;align-items:stretch}
   .match-selector .btn{width:100%}
 }
-
-
-
-
 </style>
-<script>
-  // Standalone/local-file safe mode: never redirect away from scorer.html.
-  // If no login session exists, create a lightweight local session so the
-  // scorer can run directly from the project ZIP.
-  try {
-    if (!localStorage.getItem('brklive_user')) {
-      localStorage.setItem('brklive_user', JSON.stringify({local:true,name:'BRKLIVE19'}));
-    }
-  } catch(e) {}
-</script>
-<script>
-  // Scorer is a standalone control page. Theme selection is optional and
-  // must never redirect/stop the scorer from loading.
-</script>
 </head>
 <body>
 
@@ -146,12 +126,19 @@ textarea{min-height:130px;resize:vertical}
   <a href="./index.html" style="display:inline-block;padding:10px 16px;border:1px solid var(--line);border-radius:10px;color:var(--text);text-decoration:none;background:#11182a;">← Home / Tournament</a>
 </div>
 
-<div style="position:sticky;top:0;z-index:1000;display:flex;justify-content:flex-end;padding:8px 0;background:linear-gradient(180deg,#070b16 82%,transparent);">
-<button class="btn custom" style="width:auto;padding:11px 20px;font-size:14px;box-shadow:0 6px 20px #0008;" onclick="openThemePage()">🎨 OPEN THEME SECTION</button>
-</div>
 <h1>🏏 BRKLIVE19 V4</h1>
 <div class="sub">Live Cricket Scorer • Auto‑Save to Firebase</div>
   <div id="status" class="status ok">🟡 Initializing scorer…</div>
+<div class="card" style="margin-top:10px;">
+  <h2>🔗 Match Web / Streaming Overlay Link</h2>
+  <div class="mini">Copy this link and paste it into OBS, vMix, PRISM, CameraFi or another browser-source streaming app.</div>
+  <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+    <input id="streamOverlayUrl" readonly style="flex:1;min-width:220px;" value="Loading overlay link...">
+    <button class="btn blue" style="width:auto;padding:11px 18px;" onclick="copyStreamOverlayUrl()">📋 COPY LINK</button>
+    <button class="btn good" style="width:auto;padding:11px 18px;" onclick="openStreamOverlay()">↗ OPEN OVERLAY</button>
+  </div>
+</div>
+
 <!-- ===== MATCH SELECTOR ===== -->
 <div class="card">
   <div class="match-selector">
@@ -231,14 +218,7 @@ textarea{min-height:130px;resize:vertical}
 <!-- ===== OVERLAY CONTROLLER ===== -->
 <div class="card">
   <h2>📺 Overlay Controller</h2>
-  <div class="mini">All scoring and overlay controls use the same Firebase <b>liveScore</b> record. Local BroadcastChannel + localStorage fallback is also active for same-device display.</div>
-  <div class="g2" style="margin-top:10px">
-    <button class="btn blue" onclick="openDisplayScreen()">🖥 OPEN DISPLAY SCREEN</button>
-    <button class="btn dark" onclick="syncOverlayNow()">🔄 UPDATE DISPLAY NOW</button>
-  </div>
-  <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
-    <button class="btn custom" style="width:auto;padding:10px 18px;" onclick="openThemePage()">🎨 OPEN THEME SECTION</button>
-  </div>
+  <div class="mini">All scoring and overlay controls use the same Firebase <b>liveScore</b> record.</div>
 
   <h3 style="color:var(--cyan);margin-top:14px">🖥 Overlay Mode</h3>
   <div class="g4">
@@ -273,6 +253,36 @@ textarea{min-height:130px;resize:vertical}
     <button class="btn wick" onclick="broadcastEvent('RUN OUT')">🏃 RUN OUT</button>
   </div>
 
+  <h3 style="color:var(--cyan);margin-top:14px">🎨 3D Overlay Theme</h3>
+  <div class="themeGrid">
+    <button class="theme" data-theme="blue" onclick="setTheme('blue')">🔵 BLUE</button>
+    <button class="theme" data-theme="neon" onclick="setTheme('neon')">🟣 NEON</button>
+    <button class="theme" data-theme="green" onclick="setTheme('green')">🟢 GREEN</button>
+    <button class="theme" data-theme="gold" onclick="setTheme('gold')">🟡 GOLD</button>
+    <button class="theme" data-theme="red" onclick="setTheme('red')">🔴 RED</button>
+    <button class="theme" data-theme="rainbow" onclick="setTheme('rainbow')">🌈 RAINBOW</button>
+    <button class="theme" data-theme="theme2" onclick="setTheme('theme2')">⭐ THEME 2</button>
+    <button class="theme" data-theme="theme3" onclick="setTheme('theme3')">🖼️ THEME 3</button>
+    <button class="theme" data-theme="classic" onclick="setTheme('classic')">📺 CLASSIC</button>
+  </div>
+
+  <h3 style="color:var(--cyan);margin-top:14px;">🎨 Custom Overlay Colors</h3>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px;">
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);">
+      Primary: <input type="color" id="customPrimaryColor" value="#00b8e8" style="width:60px;height:40px;padding:2px;border-radius:8px;background:transparent;border:1px solid var(--line);cursor:pointer;">
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);">
+      Secondary: <input type="color" id="customSecondaryColor" value="#ffd900" style="width:60px;height:40px;padding:2px;border-radius:8px;background:transparent;border:1px solid var(--line);cursor:pointer;">
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);">
+      Deep Blue: <input type="color" id="customDeepBlueColor" value="#071a58" style="width:60px;height:40px;padding:2px;border-radius:8px;background:transparent;border:1px solid var(--line);cursor:pointer;">
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);">
+      Summary Background: <input type="color" id="customSummaryBgColor" value="#07101f" style="width:60px;height:40px;padding:2px;border-radius:8px;background:transparent;border:1px solid var(--line);cursor:pointer;">
+    </label>
+    <button class="btn custom" style="flex:0 1 auto;padding:8px 18px;" onclick="setCustomTheme()">🎨 Apply Custom</button>
+    <button class="btn dark" style="flex:0 1 auto;padding:8px 18px;" onclick="setTheme('blue')">↺ Reset to Blue</button>
+  </div>
 </div>
 
 <!-- ===== MODALS ===== -->
@@ -389,36 +399,6 @@ textarea{min-height:130px;resize:vertical}
   const app = firebaseReady ? initializeApp(firebaseConfig) : null;
   const db = firebaseReady ? getDatabase(app) : null;
   const liveRef = firebaseReady && db ? ref(db, "liveScore") : null;
-  // Secondary per-match channel. The primary liveScore path is kept for compatibility.
-  const liveMatchRef = firebaseReady && db ? (matchId => ref(db, "liveScoreByMatch/" + encodeURIComponent(String(matchId || "default")))) : null;
-  let liveChannel = null;
-  try { liveChannel = new BroadcastChannel("BRKLIVE19_LIVE_OVERLAY"); } catch(e) { liveChannel = null; }
-
-  // Direct scorer -> overlay bridge. This is the most reliable path when both
-  // pages are open from the same project/folder, including file:// mode.
-  let brkOverlayWindow = null;
-  function publishWindowBridge(data){
-    const packet = { ...data, __brklive19Bridge:true, __bridgeVersion:3, __bridgeUpdatedAt:Date.now() };
-    try { if (brkOverlayWindow && !brkOverlayWindow.closed) brkOverlayWindow.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:packet},"*"); } catch(e){}
-    try { if (window.opener) window.opener.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:packet},"*"); } catch(e){}
-  }
-  window.addEventListener("message", e => {
-    if(e && e.data && e.data.type === "BRKLIVE19_OVERLAY_READY"){
-      try { e.source && e.source.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:{...S,__brklive19Bridge:true,__bridgeVersion:3,__bridgeUpdatedAt:Date.now()}}, "*"); } catch(err){}
-    }
-  });
-
-  // Robust cross-tab bridge. Firebase is preferred, but localStorage polling
-  // and BroadcastChannel keep the overlay responsive when the project is
-  // opened directly from a ZIP/file on the same device.
-  function publishLocalBridge(data){
-    const packet = { ...data, __brklive19Bridge: true, __bridgeVersion: 2, __bridgeUpdatedAt: Date.now() };
-    try { localStorage.setItem("brklive19_liveScore", JSON.stringify(packet)); } catch(e) {}
-    try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(packet)); } catch(e) {}
-    try { localStorage.setItem("brklive19_liveScore_tick", String(Date.now())); } catch(e) {}
-    try { if (liveChannel) liveChannel.postMessage({type:"LIVE_SCORE", data:packet}); } catch(e) {}
-    publishWindowBridge(packet);
-  }
 
   // ---- Helpers ----
   const $ = id => document.getElementById(id);
@@ -431,7 +411,6 @@ textarea{min-height:130px;resize:vertical}
   }
   function teamShort(side) {
     const full = teamName(side);
-    // Try to get a short name: take first 3 chars or first word
     if (full && full.length > 4) {
       const parts = full.split(" ");
       if (parts.length > 1) return parts.map(p => p[0]).join("").toUpperCase();
@@ -472,7 +451,7 @@ textarea{min-height:130px;resize:vertical}
       overlay:{
         showTournament:false, showVenue:false, showMatch:false, showToss:false, showResult:false, showBowler:false,
         positions:{ tournament:"upper", match:"middle", toss:"middle", custom:"upper" },
-        scoreVisible:true, intro:false, introDismissedAt:0,
+        scoreVisible:true,
         playerLower:{ active:false, slot:"", player:"" },
         partnership:{ active:false }
       },
@@ -484,11 +463,6 @@ textarea{min-height:130px;resize:vertical}
   let syncing = false;
   let currentMatchId = null;
 
-  const urlTheme = new URLSearchParams(window.location.search).get('theme') || localStorage.getItem('brklive19_pending_theme') || '';
-  if (['blue','neon','green','gold','theme2','theme3','theme4','theme5','theme6','glass','carbon','stadium','aurora','metallic','redblack','rainbow','custom'].includes(urlTheme)) S.theme = urlTheme;
-  localStorage.removeItem('brklive19_pending_theme');
-  const overlayIntroKey = Date.now();
-
   // ---- Load match bridge from localStorage ----
   function loadMatchBridge(matchId) {
     try {
@@ -496,36 +470,23 @@ textarea{min-height:130px;resize:vertical}
       if (!raw) return false;
       const b = JSON.parse(raw);
       if (!b || (!b.teamA && !b.teamB)) return false;
-
-      // Theme changes must NEVER create a fresh match. Restore the saved match state first.
-      let saved = null;
-      try { saved = JSON.parse(localStorage.getItem('brklive19_match_state_' + (matchId || b.matchId)) || 'null'); } catch(e) {}
-      if (saved && typeof saved === 'object') {
-        S = { ...createDefaultState(), ...saved };
-      }
-
-      S.tournament = b.tournamentName || b.tournament || S.tournament || '';
-      S.venue = b.venue || b.tournamentVenue || S.venue || '';
-      S.matchName = b.matchName || S.matchName || '';
-      S.teamA = b.teamA || S.teamA || 'Team A';
-      S.teamB = b.teamB || S.teamB || 'Team B';
-      S.maxOvers = Number(b.maxOvers) || S.maxOvers || 20;
-      S.tossWinner = b.tossWinner === 'teamA' ? 'A' : (b.tossWinner === 'teamB' ? 'B' : (b.tossWinner || S.tossWinner || ''));
-      S.tossDecision = b.tossDecision || S.tossDecision || 'bat';
-      S.xiA = Array.isArray(b.xiA) && b.xiA.length ? b.xiA : (S.xiA || []);
-      S.xiB = Array.isArray(b.xiB) && b.xiB.length ? b.xiB : (S.xiB || []);
-      S.matchId = b.matchId || matchId || S.matchId || '';
-
-      // Only initialise a brand-new match. Existing saved scores/innings stay untouched.
-      if (!saved) {
-        S.started = false;
-        S.innings = 1;
-        S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0; S.partnershipRuns=0; S.partnershipBalls=0;
-        S.history = []; S.events = []; S.batters = {}; S.bowlers = {};
-        S.striker = ''; S.nonStriker = ''; S.bowler = ''; S.target = 0;
-        S.matchWinner=''; S.matchResult=''; S.resultText=''; S.status='live';
-      }
-      S.overlay = { ...(S.overlay||{}), showTournament:true, scoreVisible:false, intro:true };
+      S.tournament = b.tournamentName || b.tournament || '';
+      S.venue = b.venue || b.tournamentVenue || '';
+      S.matchName = b.matchName || '';
+      S.teamA = b.teamA || 'Team A';
+      S.teamB = b.teamB || 'Team B';
+      S.maxOvers = Number(b.maxOvers) || 20;
+      S.tossWinner = b.tossWinner === 'teamA' ? 'A' : (b.tossWinner === 'teamB' ? 'B' : (b.tossWinner || ''));
+      S.tossDecision = b.tossDecision || 'bat';
+      S.xiA = Array.isArray(b.xiA) ? b.xiA : [];
+      S.xiB = Array.isArray(b.xiB) ? b.xiB : [];
+      S.matchId = b.matchId || '';
+      S.started = false;
+      S.innings = 1;
+      S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0; S.partnershipRuns=0; S.partnershipBalls=0;
+      S.history = []; S.events = []; S.batters = {}; S.bowlers = {};
+      S.striker = ''; S.nonStriker = ''; S.bowler = ''; S.target = 0;
+      S.matchWinner=''; S.matchResult=''; S.resultText=''; S.status='live';
       return true;
     } catch (e) { console.error('Match bridge error:', e); return false; }
   }
@@ -565,12 +526,10 @@ textarea{min-height:130px;resize:vertical}
     const sel = $('matchSelector');
     const id = sel.value;
     if (!id) { alert('Please select a match.'); return; }
-    // Load match data from storage
     const matches = getAllMatches();
     const match = matches.find(m => m.id === id);
     if (!match) { alert('Match not found.'); return; }
     currentMatchId = id;
-    // Build bridge data from the selected tournament + match
     const tournaments = (() => {
       try { return JSON.parse(localStorage.getItem('brklive_tournaments') || '[]'); } catch { return []; }
     })();
@@ -593,7 +552,6 @@ textarea{min-height:130px;resize:vertical}
     localStorage.setItem('brklive19_score_bridge', JSON.stringify(bridge));
     loadMatchBridge(match.id);
     S.matchId = match.id;
-    // Reset score state
     S.started = false;
     S.innings = 1;
     S.runs = 0; S.wickets = 0; S.legalBalls = 0; S.extras = 0;
@@ -603,13 +561,12 @@ textarea{min-height:130px;resize:vertical}
     S.firstInnings = { team:'', runs:0, wickets:0, balls:0, extras:0 };
     S.secondInningsStarted = false;
     S.pendingSecondInnings = false;
-    S.overlay = { showTournament:true, showVenue:false, showMatch:false, showToss:false, showResult:false, showBowler:false, positions:{}, scoreVisible:false, intro:true, playerLower:{active:false,slot:'',player:''}, partnership:{active:false} };
+    S.overlay = { showTournament:false, showVenue:false, showMatch:false, showToss:false, showResult:false, showBowler:false, positions:{}, scoreVisible:true, playerLower:{active:false,slot:'',player:''}, partnership:{active:false} };
     saveNow();
     render();
     toast('Match loaded: ' + match.teamAName + ' vs ' + match.teamBName);
   };
 
-  // ---- Toast ----
   function toast(msg) {
     const el = document.getElementById('status');
     if (el) {
@@ -639,10 +596,7 @@ textarea{min-height:130px;resize:vertical}
       m.bowler = S.bowler;
       m.totalRuns = Number(S.runs) || 0;
       m.totalWickets = Number(S.wickets) || 0;
-      m.totalBalls = Number(S.legalBalls || 0);
       m.totalOvers = Number((Number(S.legalBalls || 0) / 6).toFixed(1));
-      m.firstInnings = JSON.parse(JSON.stringify(S.firstInnings || {}));
-      if (S.innings === 2) m.secondInnings = {team:S.battingTeam,runs:Number(S.runs)||0,wickets:Number(S.wickets)||0,balls:Number(S.legalBalls)||0,extras:Number(S.extras)||0};
       m.currentInnings = S.innings;
       m.target = S.target || null;
       m.status = S.status || "live";
@@ -661,13 +615,8 @@ textarea{min-height:130px;resize:vertical}
 
   // ---- Save ----
   async function save() {
-    // ALWAYS push the newest scorer state to the open overlay immediately.
-    // This is intentionally done before Firebase so the display works in
-    // local-file mode and never waits for a network round-trip.
-    try { publishLocalBridge(S); } catch(e) {}
-    try { if (S.matchId) localStorage.setItem("brklive19_match_state_" + S.matchId, JSON.stringify(S)); } catch(e) {}
     if (!firebaseReady || !liveRef) {
-      publishLocalBridge(S);
+      try { localStorage.setItem("brklive19_liveScore", JSON.stringify(S)); } catch(e) {}
       syncScoreToIndex();
       return;
     }
@@ -710,37 +659,26 @@ textarea{min-height:130px;resize:vertical}
       bowlingShort: teamShort(S.bowlingTeam)
     };
     try {
-      // Publish immediately through every available bridge.
-      publishLocalBridge(data);
       await set(liveRef, data);
-      // Secondary per-match path; failure here must never block the main overlay path.
-      try { if (S.matchId && liveMatchRef) await set(liveMatchRef(S.matchId), data); } catch(e) { console.warn("Per-match live channel unavailable", e); }
-      publishLocalBridge(data);
+      try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(data)); } catch(e) {}
       syncScoreToIndex();
     } catch (error) {
       console.error('Firebase save failed:', error);
       try { localStorage.setItem("brklive19_last_liveScore", JSON.stringify(data)); } catch(e) {}
       const el = $("status");
       if (el) {
-        el.textContent = "🟢 Firebase unavailable — display is using local live bridge";
+        el.textContent = "🔴 Firebase save failed — live overlay cannot receive this score";
         el.className = "status";
       }
     } finally {
-      try { publishLocalBridge(S); } catch(e) {}
       syncing = false;
     }
   }
-
-  // Manual overlay sync helper used by every control button.
-  window.syncOverlayNow = async function(){
-    try { await save(); render(); } catch(e) { console.error("Overlay sync failed", e); }
-  };
 
   function currentRunRate() { if (!S.legalBalls) return 0; return Number((S.runs / (S.legalBalls/6)).toFixed(2)); }
   function runsToWin() { if (S.innings!==2 || !S.target) return 0; return Math.max(S.target - S.runs, 0); }
   function requiredRunRate() { if (S.innings!==2 || !S.target) return 0; const r=runsToWin(), b=legalBallsRemaining(); if(r<=0||b<=0)return 0; return Number(((r/b)*6).toFixed(2)); }
 
-  // ---- pushHistory ----
   function pushHistory() {
     if (!S.history) S.history = [];
     S.history.push(JSON.stringify({
@@ -755,7 +693,6 @@ textarea{min-height:130px;resize:vertical}
     if (S.history.length > 20) S.history.shift();
   }
 
-  // ---- openStart ----
   window.openStart = function() {
     if (!S.teamA || !S.teamB || S.xiA.length < 2 || S.xiB.length < 2 || !S.tossWinner || !S.tossDecision) {
       alert("Match data incomplete. Please load a match first.");
@@ -828,10 +765,9 @@ textarea{min-height:130px;resize:vertical}
       };
       S.target = S.runs + 1;
       S.pendingSecondInnings = true;
-      S.events.push(`🏁 1ST INNINGS COMPLETE — ${S.runs}/${S.wickets}`);
+      S.events.push(`🏁 INNINGS 1 COMPLETE — ${S.runs}/${S.wickets}`);
       await save();
       render();
-      // Show second innings modal
       const nextTeam = teamName(S.battingTeam === "A" ? "B" : "A");
       const nextShort = teamShort(S.battingTeam === "A" ? "B" : "A");
       const completedOvers = oversText(S.legalBalls);
@@ -842,7 +778,6 @@ textarea{min-height:130px;resize:vertical}
         `Target for <b>${escapeHTML(nextTeam)}</b> (${escapeHTML(nextShort)}): <b>${S.target}</b>`;
       openModal("secondInningsModal");
     } else {
-      // A manual/maximum-overs end of the 2nd innings also decides the match.
       if (S.status !== "completed") {
         const chasing = teamName(S.battingTeam);
         const defending = teamName(S.firstInnings.team);
@@ -872,13 +807,12 @@ textarea{min-height:130px;resize:vertical}
     S.batters = {}; S.bowlers = {};
     S.striker = ""; S.nonStriker = ""; S.bowler = "";
     S.started = false;
-    S.events.push(`▶ 2ND INNINGS — Target ${S.target}`);
+    S.events.push(`▶ SECOND INNINGS — Target ${S.target}`);
     await save();
     render();
     setTimeout(openStart, 300);
   };
 
-  // ---- scoreRuns ----
   window.scoreRuns = async function(runs) {
     if (!S.started) { alert("Start the match first."); return; }
     pushHistory();
@@ -900,7 +834,6 @@ textarea{min-height:130px;resize:vertical}
     render();
   };
 
-  // ---- extras ----
   window.openExtra = function(type) {
     if (!S.started) { alert("Start the match first."); return; }
     extraType = type;
@@ -936,7 +869,6 @@ textarea{min-height:130px;resize:vertical}
     render();
   };
 
-  // ---- wicket ----
   window.openWicket = function() {
     if (!S.started) { alert("Start the match first."); return; }
     options("dismissed", [S.striker, S.nonStriker].filter(Boolean));
@@ -977,7 +909,6 @@ textarea{min-height:130px;resize:vertical}
     }
   };
 
-  // ---- new batter ----
   window.newBatter = function(dismissed="") {
     const occupied = [S.striker, S.nonStriker].filter(Boolean);
     const list = players(S.battingTeam).filter(p => !occupied.includes(p) && !battingStats(p).out);
@@ -1001,7 +932,6 @@ textarea{min-height:130px;resize:vertical}
     render();
   };
 
-  // ---- bowler ----
   window.openBowler = function(force=false) {
     if (!S.started) { alert("Start the match first."); return; }
     const list = players(S.bowlingTeam).filter(p => p !== S.bowler);
@@ -1035,43 +965,11 @@ textarea{min-height:130px;resize:vertical}
     render();
   };
 
-  function getDisplayUrl(){
-    const params = new URLSearchParams();
-    if (S.matchId) params.set("match", S.matchId);
-    if (S.theme) params.set("theme", S.theme);
-    if (S.tournament) params.set("tournament", S.tournament);
-    const url = new URL("./overlay.html", location.href);
-    params.forEach((v,k) => url.searchParams.set(k,v));
-    return url.href;
-  }
-  window.refreshDisplayFrame = function(){
-    const f=$("liveDisplayFrame");
-    if(f) {
-      f.src=getDisplayUrl();
-      setTimeout(() => {
-        try { f.contentWindow && f.contentWindow.postMessage({type:"BRKLIVE19_LIVE_SCORE",data:{...S,__brklive19Bridge:true,__bridgeVersion:3,__bridgeUpdatedAt:Date.now()}}, "*"); } catch(e){}
-      }, 400);
-    }
-  };
-  window.openDisplayScreen = function() {
-    const url=getDisplayUrl();
-    const f=$("liveDisplayFrame"); if(f && f.src !== url) f.src=url;
-    const w = window.open(url, "BRKLIVE19_DISPLAY");
-    if (w) {
-      brkOverlayWindow = w;
-      setTimeout(() => publishWindowBridge(S), 150);
-      setTimeout(() => publishWindowBridge(S), 700);
-    } else {
-      alert("Display is already available in the Live Display Screen above. Allow pop-ups if you want a separate full-screen window.");
-    }
-  };
-
   window.saveNow = async function() {
     await save();
-    alert("✅ Saved! Display screen updated.");
+    alert("✅ Saved! Overlay updated.");
   };
 
-  // ---- broadcast ----
   async function activateBroadcast(type) {
     const eventId = String(Date.now()) + "-" + Math.random().toString(36).slice(2,8);
     S.broadcast = { type, text:type, active:true, id:eventId, eventId:eventId };
@@ -1087,14 +985,11 @@ textarea{min-height:130px;resize:vertical}
   }
 
   window.broadcastEvent = async function(type) {
-    // Graphics buttons (FOUR/SIX/WICKET/FREE HIT/HAT-TRICK) are allowed even
-    // when the scorer is not currently running, so the operator can test the display.
-    if (!S.started && !["FREE HIT","HAT-TRICK BALL","FOUR","SIX","WICKET","RUN OUT"].includes(String(type).toUpperCase())) { alert("Start the match first."); return; }
+    if (!S.started) { alert("Start the match first."); return; }
     await activateBroadcast(type);
     render();
   };
 
-  // ---- overlay controls ----
   function ensureOverlayState(){
     if(!S.overlay) S.overlay = {};
     S.overlay = {
@@ -1107,8 +1002,6 @@ textarea{min-height:130px;resize:vertical}
       showBowler:!!S.overlay.showBowler,
       positions:S.overlay.positions||{tournament:"upper",match:"middle",toss:"middle",custom:"upper"},
       scoreVisible: S.overlay.scoreVisible !== false,
-      intro: S.overlay.intro === true,
-      introDismissedAt: Number(S.overlay.introDismissedAt)||0,
       playerLower:S.overlay.playerLower||{active:false,slot:"",player:""},
       partnership:S.overlay.partnership||{active:false}
     };
@@ -1116,7 +1009,6 @@ textarea{min-height:130px;resize:vertical}
 
   window.toggleTargetOverlay = async function() {
     ensureOverlayState();
-    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
     if (S.innings !== 2 || !S.target || S.status === "completed") { alert("Target display is available during the 2nd innings only."); return; }
     S.overlay.showTarget = !S.overlay.showTarget;
     await save();
@@ -1125,9 +1017,6 @@ textarea{min-height:130px;resize:vertical}
 
   window.toggleOverlayBanner = async function(type) {
     ensureOverlayState();
-    S.overlay.intro = false;
-    S.overlay.introDismissedAt = Date.now();
-    S.overlay.scoreVisible = true;
     const key = type === "tournament" ? "showTournament" : type === "venue" ? "showVenue" : type === "match" ? "showMatch" : type === "result" ? "showResult" : "showToss";
     S.overlay[key] = !S.overlay[key];
     await save();
@@ -1136,7 +1025,6 @@ textarea{min-height:130px;resize:vertical}
 
   window.togglePlayerLower = async function(which) {
     ensureOverlayState();
-    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
     const name = which === "b1" ? (S.striker || "") : (S.nonStriker || "");
     if(!name) { alert(which==="b1" ? "B1/striker not selected." : "B2/non-striker not selected."); return; }
     if(S.overlay.playerLower.active && S.overlay.playerLower.slot === which) {
@@ -1157,7 +1045,6 @@ textarea{min-height:130px;resize:vertical}
 
   window.togglePartnership = async function() {
     ensureOverlayState();
-    S.overlay.intro = false; S.overlay.introDismissedAt = Date.now(); S.overlay.scoreVisible = true;
     if (!S.striker || !S.nonStriker) { alert("Select both current batters first."); return; }
     S.overlay.partnership.active = !S.overlay.partnership.active;
     await save();
@@ -1195,9 +1082,6 @@ textarea{min-height:130px;resize:vertical}
 
   window.showInningsScoreboard = async function(inningsNo) {
     ensureOverlayState();
-    S.overlay.intro = false;
-    S.overlay.introDismissedAt = Date.now();
-    S.overlay.scoreVisible = true;
     if (Number(inningsNo) === 2 && S.innings < 2) {
       alert("2nd innings has not started yet.");
       return;
@@ -1211,42 +1095,34 @@ textarea{min-height:130px;resize:vertical}
     ensureOverlayState();
     if (mode === 'scorecard') { await toggleScoreboard(); return; }
     if (mode === 'bowler') {
-      S.overlay.intro = false;
-      S.overlay.introDismissedAt = Date.now();
-      S.overlay.scoreVisible = true;
       S.mode = 'default';
       S.overlay.showBowler = !S.overlay.showBowler;
       await save();
       render();
       return;
     }
-    if (mode === 'default') {
-      S.mode='default';
-      S.overlay.intro = false;
-      S.overlay.introDismissedAt = Date.now();
-      S.overlay.showTournament = false;
-      S.overlay.scoreVisible = true;
-      await save(); render(); return;
-    }
+    if (mode === 'default') { S.mode='default'; await save(); render(); return; }
     S.mode = mode;
-    S.overlay.intro = false;
-    S.overlay.introDismissedAt = Date.now();
-    S.overlay.scoreVisible = true;
     await save();
     render();
   };
 
-  window.openThemePage = function(){
-    const params = new URLSearchParams();
-    if (S.matchId) params.set('match', S.matchId);
-    if (S.tournament) params.set('tournament', S.tournament);
-    if (S.theme) params.set('selected', S.theme);
-    window.location.href = './themes.html' + (params.toString() ? '?' + params.toString() : '');
+  function getStreamOverlayUrl(){
+    const base=window.location.href.split('?')[0].replace(/(?:scorer(?:\(\d+\))?|BRKLIVE19_scorer_updated)\.html$/i,'overlay.html');
+    return base + (S.matchId ? ('?match=' + encodeURIComponent(S.matchId)) : '');
+  }
+  function updateStreamOverlayUrl(){
+    const el=document.getElementById('streamOverlayUrl'); if(el) el.value=getStreamOverlayUrl();
+  }
+  window.copyStreamOverlayUrl=function(){
+    const el=document.getElementById('streamOverlayUrl'); if(!el)return;
+    const done=()=>toast('📋 Overlay link copied!');
+    navigator.clipboard?.writeText(el.value).then(done).catch(()=>{el.select();document.execCommand('copy');done();});
   };
+  window.openStreamOverlay=function(){ window.open(getStreamOverlayUrl(),'_blank'); };
 
   window.setTheme = async function(theme) {
     S.theme = theme;
-    try { localStorage.setItem("brklive19_pending_theme", theme); } catch(e) {}
     document.querySelectorAll('.theme').forEach(b => b.classList.toggle('active', b.dataset.theme === theme));
     await save();
     render();
@@ -1265,22 +1141,6 @@ textarea{min-height:130px;resize:vertical}
     alert('✅ Custom overlay colors applied!');
   };
 
-  window.applyDesignerTheme = async function() {
-    const customColors = {
-      primary: document.getElementById('designerHighlight').value,
-      secondary: document.getElementById('designerAccent').value,
-      accent: document.getElementById('designerMain').value,
-      deepBlue: document.getElementById('designerDark').value,
-      summaryBg: document.getElementById('designerDark').value
-    };
-    S.theme = 'custom';
-    S.customColors = customColors;
-    await save();
-    render();
-    alert('✅ Custom complete cricket theme applied to overlay, summary and scorecard!');
-  };
-
-  // ---- checkMatchResult ----
   function completeMatch(winner, result) {
     ensureOverlayState();
     S.started = false;
@@ -1324,12 +1184,11 @@ textarea{min-height:130px;resize:vertical}
     return false;
   }
 
-  // ---- modal helpers ----
   function openModal(id) { $(id).classList.add("show"); }
   window.closeModal = function(id) { $(id).classList.remove("show"); };
 
-  // ---- render ----
   function render() {
+    updateStreamOverlayUrl();
     const customPreview = $("lowerPreview"); if (customPreview) customPreview.textContent = (S.customLower&&S.customLower.active) ? S.customLower.text : "Preview";
     const statusEl = $("status");
     if (statusEl) {
@@ -1346,13 +1205,12 @@ textarea{min-height:130px;resize:vertical}
       $("matchStatus").textContent =
         `🟢 LIVE — ${teamName(S.battingTeam)} (${batShort}) ${S.runs}/${S.wickets} (${oversText(S.legalBalls)}) • ${S.striker||"—"} / ${S.nonStriker||"—"} • ${S.bowler||"—"}`;
     } else {
-      $("matchStatus").textContent = S.innings === 2 ? `⏸ 2ND INNINGS READY • Target ${S.target}` : "⏸ Match not started";
+      $("matchStatus").textContent = S.innings === 2 ? `⏸ SECOND INNINGS READY • Target ${S.target}` : "⏸ Match not started";
     }
 
     $("liveScore").textContent = `${S.runs}/${S.wickets}`;
     $("liveOvers").textContent = `${oversText(S.legalBalls)} OV`;
 
-    // Target display with "To Win Need ___ runs From ___ balls"
     if (S.status === "completed" && S.resultText) {
       $("targetText").innerHTML = `🏆 <b>${escapeHTML(S.resultText)}</b>`;
     } else if (S.innings === 2 && S.target && S.started) {
@@ -1365,7 +1223,7 @@ textarea{min-height:130px;resize:vertical}
       $("targetText").textContent = `FIRST INNINGS • ${escapeHTML(teamName(S.battingTeam))} (${escapeHTML(batShort)}) batting`;
     }
 
-    $("liveMeta").textContent = `${teamName(S.battingTeam)} (${batShort}) batting • ${teamName(S.bowlingTeam)} (${bowlShort}) bowling • ${S.innings===1 ? "1ST" : "2ND"} INNINGS`;
+    $("liveMeta").textContent = `${teamName(S.battingTeam)} (${batShort}) batting • ${teamName(S.bowlingTeam)} (${bowlShort}) bowling • Innings ${S.innings}`;
     $("crr").textContent = currentRunRate().toFixed(2);
     $("rrr").textContent = requiredRunRate().toFixed(2);
     $("extras").textContent = S.extras;
@@ -1383,28 +1241,18 @@ textarea{min-height:130px;resize:vertical}
     document.querySelectorAll('.theme').forEach(b => b.classList.toggle('active', b.dataset.theme === S.theme));
   }
 
-  // ---- URL match bridge / initial load ----
   populateMatchSelector();
 
-  // Load the match selected by Index before Firebase can push an old liveScore record.
   const bridged = loadMatchFromUrl() || loadMatchBridge();
 
-  // ---- Firebase listener ----
   if (liveRef) {
     onValue(liveRef, snapshot => {
       const data = snapshot.val();
       if (!data) { render(); return; }
-
-      // Ignore live data belonging to a different match.
       if (S.matchId && data.matchId && data.matchId !== S.matchId) return;
-
       if (syncing) return;
-
-      // Preserve the Index bridge if the Firebase record is missing those fields.
       const current = S;
-      const preferredTheme = urlTheme || current.theme || 'blue';
       S = { ...createDefaultState(), ...data };
-      if (preferredTheme) S.theme = preferredTheme;
       if (!S.teamA) S.teamA = current.teamA;
       if (!S.teamB) S.teamB = current.teamB;
       if (!S.tournament) S.tournament = current.tournament;
@@ -1427,7 +1275,6 @@ textarea{min-height:130px;resize:vertical}
 
   if (bridged) render();
 
-  // ---- Continue match selector setup ----
   function loadMatchFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get("matchData");
@@ -1435,7 +1282,6 @@ textarea{min-height:130px;resize:vertical}
 
     let match = null;
 
-    // Preferred: Index sends the complete match bridge in the URL.
     if (encoded) {
       try {
         match = JSON.parse(decodeURIComponent(encoded));
@@ -1444,7 +1290,6 @@ textarea{min-height:130px;resize:vertical}
       }
     }
 
-    // Fallback: same-origin localStorage match record.
     if (!match && matchId) {
       const matches = getAllMatches();
       match = matches.find(m => m.id === matchId) || null;
@@ -1475,14 +1320,11 @@ textarea{min-height:130px;resize:vertical}
     return true;
   }
 
-  // ---- selector continuation ----
   if (bridged) {
     render();
-    // If no match ID set, try to find in selector
     if (!S.matchId) {
       const sel = $('matchSelector');
       if (sel && sel.options.length > 1) {
-        // Try to match by team names
         for (let i = 0; i < sel.options.length; i++) {
           const opt = sel.options[i];
           if (opt.value && opt.text.includes(S.teamA) && opt.text.includes(S.teamB)) {
@@ -1510,7 +1352,6 @@ textarea{min-height:130px;resize:vertical}
     }
   }, 300);
 
-  // ---- Handle URL view param ----
   const requestedView = new URLSearchParams(window.location.search).get("view");
   if (requestedView) {
     setTimeout(async () => {
@@ -1523,70 +1364,8 @@ textarea{min-height:130px;resize:vertical}
     }, 700);
   }
 
-  // Make functions globally available
   window.teamShort = teamShort;
   window.teamName = teamName;
-
-
-  /* ===== FINAL LOWER-THIRD CONTROL: authoritative one-button views ===== */
-  function finalOverlayReset(){
-    ensureOverlayState();
-    S.mode='default';
-    S.overlay.intro=false;
-    S.overlay.introDismissedAt=Date.now();
-    S.overlay.scoreVisible=true;
-    S.overlay.showTournament=false; S.overlay.showVenue=false; S.overlay.showMatch=false;
-    S.overlay.showToss=false; S.overlay.showResult=false; S.overlay.showBowler=false;
-    S.overlay.playerLower={active:false,slot:'',player:''};
-    S.overlay.partnership={active:false};
-  }
-  async function finalPublish(){ S.updatedAt=Date.now(); await save(); render(); }
-  window.toggleOverlayBanner=async function(type){
-    finalOverlayReset();
-    const key=type==='tournament'?'showTournament':type==='venue'?'showVenue':type==='match'?'showMatch':type==='result'?'showResult':'showToss';
-    S.overlay[key]=true;
-    await finalPublish();
-  };
-  window.togglePlayerLower=async function(which){
-    finalOverlayReset();
-    const name=which==='b1'?(S.striker||''):(S.nonStriker||'');
-    if(!name){alert(which==='b1'?'Select B1/striker first.':'Select B2/non-striker first.');return;}
-    S.overlay.playerLower={active:true,slot:which,player:name};
-    await finalPublish();
-  };
-  window.setMode=async function(mode){
-    finalOverlayReset();
-    if(mode==='scorecard'||mode==='scorecard1'||mode==='scorecard2') S.mode=mode;
-    else if(mode==='bowler') S.overlay.showBowler=true;
-    /* DEFAULT always means the normal score lower-third. */
-    await finalPublish();
-  };
-  window.broadcastEvent=async function(type){
-    const up=String(type).toUpperCase();
-    const allowed=['FREE HIT','HAT-TRICK BALL','FOUR','SIX','WICKET','RUN OUT'];
-    if(!S.started&&!allowed.includes(up)){alert('Start the match first.');return;}
-    finalOverlayReset();
-    const id=String(Date.now())+'-'+Math.random().toString(36).slice(2,10);
-    S.broadcast={type:up,text:up,active:true,id,eventId:id};
-    S.events=[...(S.events||[]),`🎬 ${up}`];
-    await finalPublish();
-    setTimeout(async()=>{if(S.broadcast&&S.broadcast.id===id){S.broadcast={...S.broadcast,active:false};await save();render();}},2800);
-  };
-  /* Automatic flow: Theme -> Tournament. Loading a match -> Match. 5 seconds -> Toss. */
-  function finalAutoIntro(){
-    clearTimeout(window.__brkIntroTimer);
-    ensureOverlayState();
-    if(S.tournament){
-      finalOverlayReset(); S.overlay.showTournament=true; save(); render();
-    }
-    if(S.teamA&&S.teamB){
-      finalOverlayReset(); S.overlay.showMatch=true; save(); render();
-      window.__brkIntroTimer=setTimeout(async()=>{
-        if(S.tossWinner){ finalOverlayReset(); S.overlay.showToss=true; await save(); render(); }
-      },5000);
-    }
-  }
-  setTimeout(finalAutoIntro,450);
 
   console.log("BRKLIVE19 V4 Scorer loaded.");
 </script>
