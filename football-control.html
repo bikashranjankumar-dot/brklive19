@@ -1,1 +1,196 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BRKLIVE19 Football Controller</title><style>body{margin:0;padding:16px;background:#06111d;color:#fff;font-family:Arial,sans-serif}*{box-sizing:border-box}.wrap{max-width:900px;margin:auto}.card{background:linear-gradient(145deg,#0c2338,#07131f);border:1px solid #1e5a4a;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 15px 40px #0008}h1{text-align:center;color:#53e89a}label{display:block;color:#a8c8c0;font-size:13px;margin-top:8px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #31516b;background:#071421;color:#fff;margin:5px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{border:0;border-radius:11px;padding:13px;color:#fff;font-weight:900;cursor:pointer;width:100%;margin-top:7px}.green{background:linear-gradient(135deg,#087d4b,#20d77c)}.yellow{background:linear-gradient(135deg,#9b6900,#ffd34d);color:#111}.red{background:linear-gradient(135deg,#8e0922,#ff3158)}.blue{background:linear-gradient(135deg,#075cc9,#36b8ff)}.dark{background:#24354b}.score{text-align:center;font-size:64px;font-weight:900}.timer{text-align:center;font-size:48px;font-weight:900;color:#ffe26d}.status{text-align:center;padding:10px;border-radius:10px;background:#092a20;margin-top:10px}.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:650px){.grid,.links{grid-template-columns:1fr}}</style></head><body><script>if(!localStorage.getItem("brklive_user")){location.href="./index.html?login=1"}</script><div class="wrap"><h1>⚽ BRKLIVE19 FOOTBALL CONTROL</h1><div class="card"><div class="grid"><div><label>Home Team</label><input id="home" value="HOME"></div><div><label>Away Team</label><input id="away" value="AWAY"></div></div><div class="grid"><div><label>Period</label><select id="period"><option>1H</option><option>HT</option><option>2H</option><option>ET1</option><option>ET2</option><option>PEN</option><option>FT</option></select></div><div><label>Added / Extra Time (minutes)</label><input id="added" type="number" min="0" value="0"></div></div></div><div class="grid"><div class="card"><h2 id="homeName">HOME</h2><div class="score" id="homeScore">0</div><button class="btn green" id="homeGoal">⚽ + GOAL</button><button class="btn yellow" id="homeYellow">🟨 YELLOW</button><button class="btn red" id="homeRed">🟥 RED</button></div><div class="card"><h2 id="awayName">AWAY</h2><div class="score" id="awayScore">0</div><button class="btn green" id="awayGoal">⚽ + GOAL</button><button class="btn yellow" id="awayYellow">🟨 YELLOW</button><button class="btn red" id="awayRed">🟥 RED</button></div></div><div class="card"><div class="timer" id="timer">00:00</div><div class="grid"><button class="btn green" id="start">▶ START</button><button class="btn yellow" id="pause">⏸ PAUSE</button></div><button class="btn dark" id="reset">↺ RESET</button><button class="btn blue" id="save">💾 SEND SCORE TO OVERLAY</button><div class="status" id="status">Ready</div></div><div class="card"><h2>🎨 Football Overlay Colours</h2><div class="grid"><div><label>Primary Colour</label><input id="primaryColor" type="color" value="#087d4b"></div><div><label>Accent Colour</label><input id="accentColor" type="color" value="#53e89a"></div><div><label>Score Background</label><input id="scoreColor" type="color" value="#061b35"></div><div><label>Goal Animation Colour</label><input id="goalColor" type="color" value="#16c784"></div></div><button class="btn blue" id="applyColors">APPLY COLOURS</button></div><div class="card"><h2>📺 Football Broadcast</h2><div class="links"><button class="btn blue" id="openOverlay">OPEN FOOTBALL OVERLAY</button><button class="btn dark" id="copyOverlay">COPY OVERLAY LINK</button></div></div></div><script type="module">import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';import{getDatabase,ref,set}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';const cfg={apiKey:'AIzaSyBLWq1bqJ32F2cg3mqYQ0uwXcS3zvTA3A4',authDomain:'brklive19-2bab4.firebaseapp.com',databaseURL:'https://brklive19-2bab4-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'brklive19-2bab4',storageBucket:'brklive19-2bab4.firebasestorage.app',messagingSenderId:'294058533898',appId:'1:294058533898:web:4996705937e969939cabf3'};const db=getDatabase(initializeApp(cfg)),live=ref(db,'footballLiveScore');const $=id=>document.getElementById(id);const active=JSON.parse(localStorage.getItem('brklive19_activeFootballMatch')||'null');if(active){$('home').value=active.homeTeam||'HOME';$('away').value=active.awayTeam||'AWAY';}let s={home:0,away:0,hy:0,ay:0,hr:0,ar:0,sec:0,run:false,t:null,goal:null};let colors=JSON.parse(localStorage.getItem('brklive19_football_colors')||'{}');function render(){ $('homeName').textContent=$('home').value.toUpperCase()||'HOME';$('awayName').textContent=$('away').value.toUpperCase()||'AWAY';$('homeScore').textContent=s.home;$('awayScore').textContent=s.away;$('timer').textContent=String(Math.floor(s.sec/60)).padStart(2,'0')+':'+String(s.sec%60).padStart(2,'0');$('status').textContent=$('period').value+' • +'+(Number($('added').value)||0)+' MIN • 🟨 '+s.hy+'-'+s.ay+' • 🟥 '+s.hr+'-'+s.ar}function bind(id,fn){$(id).onclick=()=>{fn();render()}}bind('homeGoal',()=>{s.home++;s.goal={team:'home',name:$('home').value||'HOME',id:Date.now()}});bind('awayGoal',()=>{s.away++;s.goal={team:'away',name:$('away').value||'AWAY',id:Date.now()}});bind('homeYellow',()=>s.hy++);bind('awayYellow',()=>s.ay++);bind('homeRed',()=>s.hr++);bind('awayRed',()=>s.ar++);$('start').onclick=()=>{if(s.run)return;s.run=true;s.t=setInterval(()=>{s.sec++;render()},1000)};$('pause').onclick=()=>{s.run=false;clearInterval(s.t)};$('reset').onclick=()=>{s.run=false;clearInterval(s.t);s={home:0,away:0,hy:0,ay:0,hr:0,ar:0,sec:0,run:false,t:null,goal:null};render()};async function send(){const d={sport:'football',football:{homeTeam:$('home').value||'HOME',awayTeam:$('away').value||'AWAY',homeScore:s.home,awayScore:s.away,homeYellow:s.hy,awayYellow:s.ay,homeRed:s.hr,awayRed:s.ar,seconds:s.sec,period:$('period').value,addedTime:Number($('added').value)||0,updatedAt:Date.now(),colors:{primary:colors.primary||'#087d4b',accent:colors.accent||'#53e89a',score:colors.score||'#061b35',goal:colors.goal||'#16c784'},goal:s.goal||null}};localStorage.setItem('brklive19_football',JSON.stringify(d.football));try{localStorage.setItem('brklive19_liveSport',JSON.stringify(d.football));new BroadcastChannel('BRKLIVE19_LIVE').postMessage(d);}catch(e){}await set(live,{...d,updatedAt:Date.now()});$('status').textContent='LIVE SCORE SENT TO INTERNET / FIREBASE'}$('applyColors').onclick=()=>{colors={primary:$('primaryColor').value,accent:$('accentColor').value,score:$('scoreColor').value,goal:$('goalColor').value};localStorage.setItem('brklive19_football_colors',JSON.stringify(colors));send()};$('save').onclick=send;const overlayUrl=()=>location.href.replace(/football(?:-control)?\.html.*/i,'football-overlay.html');$('openOverlay').onclick=()=>window.open(overlayUrl(),'_blank');$('copyOverlay').onclick=()=>navigator.clipboard.writeText(overlayUrl()).then(()=>alert('Overlay link copied'));render();</script></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BRKLIVE19 Football Controller</title><style>body{margin:0;padding:16px;background:#06111d;color:#fff;font-family:Arial,sans-serif}*{box-sizing:border-box}.wrap{max-width:900px;margin:auto}.card{background:linear-gradient(145deg,#0c2338,#07131f);border:1px solid #1e5a4a;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 15px 40px #0008}h1{text-align:center;color:#53e89a}label{display:block;color:#a8c8c0;font-size:13px;margin-top:8px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #31516b;background:#071421;color:#fff;margin:5px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{border:0;border-radius:11px;padding:13px;color:#fff;font-weight:900;cursor:pointer;width:100%;margin-top:7px}.green{background:linear-gradient(135deg,#087d4b,#20d77c)}.yellow{background:linear-gradient(135deg,#9b6900,#ffd34d);color:#111}.red{background:linear-gradient(135deg,#8e0922,#ff3158)}.blue{background:linear-gradient(135deg,#075cc9,#36b8ff)}.dark{background:#24354b}.score{text-align:center;font-size:64px;font-weight:900}.timer{text-align:center;font-size:48px;font-weight:900;color:#ffe26d}.status{text-align:center;padding:10px;border-radius:10px;background:#092a20;margin-top:10px}.links{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:650px){.grid,.links{grid-template-columns:1fr}}
+/* BRKLIVE19: all overlay text uppercase */
+body, body * { text-transform: uppercase; }
+
+/* BRKLIVE19: responsive overlay, never force a minimum viewport width */
+html, body { width:100%; min-width:0 !important; max-width:100%; }
+body { overflow:hidden; box-sizing:border-box; }
+*, *::before, *::after { box-sizing:border-box; }
+
+/* Keep the lower third inside the available viewport */
+.overlay, .scorebar, .main-overlay, .theme-overlay, .lower-third {
+  max-width:100vw !important;
+  min-width:0 !important;
+  width:100% !important;
+}
+
+/* Prevent text from being clipped */
+.overlay span, .overlay div, .scorebar span, .scorebar div {
+  overflow:visible;
+  min-width:0;
+}
+</style></head><body><script>if(!localStorage.getItem("brklive_user")){location.href="./index.html?login=1"}</script><div class="wrap"><h1>⚽ BRKLIVE19 FOOTBALL CONTROL</h1><div class="card"><div class="grid"><div><label>Home Team</label><input id="home" value="HOME"></div><div><label>Away Team</label><input id="away" value="AWAY"></div></div><div class="grid"><div><label>Period</label><select id="period"><option>1H</option><option>HT</option><option>2H</option><option>ET1</option><option>ET2</option><option>PEN</option><option>FT</option></select></div><div><label>Added / Extra Time (minutes)</label><input id="added" type="number" min="0" value="0"></div></div></div><div class="grid"><div class="card"><h2 id="homeName">HOME</h2><div class="score" id="homeScore">0</div><button class="btn green" id="homeGoal">⚽ + GOAL</button><button class="btn yellow" id="homeYellow">🟨 YELLOW</button><button class="btn red" id="homeRed">🟥 RED</button></div><div class="card"><h2 id="awayName">AWAY</h2><div class="score" id="awayScore">0</div><button class="btn green" id="awayGoal">⚽ + GOAL</button><button class="btn yellow" id="awayYellow">🟨 YELLOW</button><button class="btn red" id="awayRed">🟥 RED</button></div></div><div class="card"><div class="timer" id="timer">00:00</div><div class="grid"><button class="btn green" id="start">▶ START</button><button class="btn yellow" id="pause">⏸ PAUSE</button></div><button class="btn dark" id="reset">↺ RESET</button><button class="btn blue" id="save">💾 SEND SCORE TO OVERLAY</button><div class="status" id="status">Ready</div></div><div class="card"><h2>📋 Football Broadcast Details</h2><div class="grid"><div><label>Tournament Name</label><input id="tournament" placeholder="Tournament name"></div><div><label>Match Name</label><input id="match" placeholder="Match name"></div></div><label>Custom Text / Lower Third</label><input id="customText" maxlength="120" placeholder="Enter custom text to show on Football Overlay"><div class="grid"><button class="btn blue" id="showTournament">🏆 TOURNAMENT</button><button class="btn blue" id="showMatch">⚽ MATCH</button></div><button class="btn green" id="showCustom">✍️ SHOW CUSTOM TEXT ON OVERLAY</button><button class="btn dark" id="hideGraphic">✖ HIDE GRAPHIC</button><div class="status" id="graphicStatus">No graphic selected</div></div><div class="card"><h2>👥 Football Player Graphics</h2><div class="grid"><button class="btn blue" id="showPlayXI">👥 PLAY XI</button><button class="btn blue" id="showPlayerChange">🔄 PLAYER CHANGE</button></div><div id="playerChangeForm" style="display:none;margin-top:12px"><div class="grid"><div><label>Team</label><select id="changeTeam"><option value="home">Home Team</option><option value="away">Away Team</option></select></div><div><label>Player OUT</label><select id="playerOut"><option value="">— Select Player —</option></select></div><div><label>Player IN</label><select id="playerIn"><option value="">— Select Player —</option></select></div></div><button class="btn green" id="sendPlayerChange">SHOW PLAYER CHANGE</button></div><div class="status" id="playerGraphicStatus">No player graphic selected</div></div><div class="card"><h2>🎨 Football Overlay Colours</h2><div class="grid"><div><label>Primary Colour</label><input id="primaryColor" type="color" value="#087d4b"></div><div><label>Accent Colour</label><input id="accentColor" type="color" value="#53e89a"></div><div><label>Score Background</label><input id="scoreColor" type="color" value="#061b35"></div><div><label>Goal Animation Colour</label><input id="goalColor" type="color" value="#16c784"></div></div><button class="btn blue" id="applyColors">APPLY COLOURS</button></div><div class="card"><h2>📺 Football Broadcast</h2><div class="links"><button class="btn blue" id="openOverlay">OPEN FOOTBALL OVERLAY 1</button><button class="btn dark" id="copyOverlay">COPY OVERLAY LINK 1</button><button class="btn blue" id="openOverlay2">OPEN FOOTBALL OVERLAY 2</button><button class="btn dark" id="copyOverlay2">COPY OVERLAY LINK 2</button><button class="btn red" id="shootoutToggle">⚽ SHOOTOUT</button><button class="btn dark" id="shootoutOpen">OPEN SHOOTOUT OVERLAY</button><button class="btn dark" id="shootoutCopy">COPY SHOOTOUT OVERLAY LINK</button><div style="grid-column:1/-1;margin-top:8px"><label for="shootoutLink">Shootout Overlay Link (for OBS Browser Source)</label><input id="shootoutLink" value="" placeholder="https://your-site.web.app/BRKLIVE19_penalty_shootout_overlay_neon_arena.html" onclick="this.select()"><div class="status" id="shootoutLinkStatus">Default link uses the Firebase Hosting root. If your overlay is hosted elsewhere, paste its full URL here before opening or copying.</div></div></div></div>
+<div class="card" id="shootoutPanel" style="display:none;border-color:#ff3158">
+<h2>⚽ PENALTY SHOOTOUT CONTROL</h2>
+<div class="grid"><div><label>Team A</label><input id="penTeamA" value="HOME"></div><div><label>Team B</label><input id="penTeamB" value="AWAY"></div></div>
+<div class="grid"><div><label>Active team</label><select id="penActive"><option value="A">Team A</option><option value="B">Team B</option></select></div><div><label>Round</label><select id="penRound"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div></div>
+<label>Shooter name</label><input id="penShooter" placeholder="Player taking the penalty">
+<div style="margin-top:12px;padding:10px;border:1px solid #53606e;border-radius:8px;background:#111827"><h3 style="margin:0 0 10px;font-size:14px">🎨 Shootout Overlay Custom Colours</h3><div class="grid"><div><label>Overlay Background</label><input id="penBgColor" type="color" value="#102c2a" style="width:100%;height:38px;padding:3px"></div><div><label>Highlight / Accent</label><input id="penAccentColor" type="color" value="#ffb02e" style="width:100%;height:38px;padding:3px"></div><div><label>Team A Colour</label><input id="penTeamAColor" type="color" value="#ffb02e" style="width:100%;height:38px;padding:3px"></div><div><label>Team B Colour</label><input id="penTeamBColor" type="color" value="#f04c69" style="width:100%;height:38px;padding:3px"></div><div><label>Match Result Background</label><input id="penResultColor" type="color" value="#c52b48" style="width:100%;height:38px;padding:3px"></div><div><label>Result Text</label><input id="penResultTextColor" type="color" value="#ffffff" style="width:100%;height:38px;padding:3px"></div></div><button class="btn blue" id="penApplyColors" style="margin-top:10px">APPLY SHOOTOUT COLOURS</button></div>
+<div class="grid"><button class="btn green" id="penGoal">✓ GOAL</button><button class="btn red" id="penMiss">✕ MISS</button></div>
+<div class="grid"><button class="btn yellow" id="penFinish">🏁 MATCH FINISH / RESULT</button><button class="btn dark" id="penUndo">↶ UNDO LAST</button></div>
+<button class="btn dark" id="penReset">RESET SHOOTOUT</button>
+<div class="status" id="penResult">Record penalties to calculate the result.</div>
+</div></div><script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import{getDatabase,ref,set,get}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+const cfg={apiKey:'AIzaSyBLWq1bqJ32F2cg3mqYQ0uwXcS3zvTA3A4',authDomain:'brklive19-2bab4.firebaseapp.com',databaseURL:'https://brklive19-2bab4-default-rtdb.asia-southeast1.firebasedatabase.app',projectId:'brklive19-2bab4',storageBucket:'brklive19-2bab4.firebasestorage.app',messagingSenderId:'294058533898',appId:'1:294058533898:web:4996705937e969939cabf3'};
+const db=getDatabase(initializeApp(cfg)),live=ref(db,'footballLiveScore');
+const $=id=>document.getElementById(id);
+
+// Penalty shootout controller: stores results in localStorage and publishes them for the overlay.
+const penaltyState={A:[],B:[]};let penaltyFinished=false;
+const penGoals=t=>penaltyState[t].filter(x=>x.result==='goal').length;
+function publishPenalty(){
+  const payload={sport:'football',penaltyShootout:{
+    teamA:$('penTeamA').value||'HOME',teamB:$('penTeamB').value||'AWAY',
+    activeTeam:$('penActive').value,round:Number($('penRound').value)||1,
+    shooter:$('penShooter').value.trim(),colors:{bg:$('penBgColor').value,accent:$('penAccentColor').value,teamA:$('penTeamAColor').value,teamB:$('penTeamBColor').value,result:$('penResultColor').value,resultText:$('penResultTextColor').value},kicks:{A:penaltyState.A,B:penaltyState.B},
+    scoreA:penGoals('A'),scoreB:penGoals('B'),finished:penaltyFinished,
+    result:penaltyFinished?(penGoals('A')===penGoals('B')?'PENALTY SHOOTOUT TIED':(penGoals('A')>penGoals('B')?($('penTeamA').value||'HOME')+' WIN THE PENALTY SHOOTOUT':($('penTeamB').value||'AWAY')+' WIN THE PENALTY SHOOTOUT')):'',
+    updatedAt:Date.now()
+  }};
+  localStorage.setItem('brklive19_penalty_shootout',JSON.stringify(payload.penaltyShootout));
+  try{if(bc)bc.postMessage(payload)}catch(e){}
+  // Same Firebase database path, so the overlay can subscribe to this value.
+  set(ref(db,'footballPenaltyShootout'),payload.penaltyShootout).catch(e=>console.warn('Penalty sync failed',e));
+  renderPenalty();
+}
+function renderPenalty(){
+  const a=penGoals('A'),b=penGoals('B');
+  $('penResult').textContent=penaltyFinished?(a===b?'TIED '+a+' – '+b+' · RECORD SUDDEN-DEATH KICKS AND FINISH AGAIN':(a>b?($('penTeamA').value||'HOME'):($('penTeamB').value||'AWAY'))+' WIN · FINAL PENALTY SCORE '+a+' – '+b):'CURRENT PENALTY SCORE: '+a+' – '+b+' · KICKS '+penaltyState.A.length+' – '+penaltyState.B.length;
+}
+function penaltyKick(result){
+  if(penaltyFinished){$('penResult').textContent='MATCH FINISHED · RESET OR UNDO TO CONTINUE';return}
+  const t=$('penActive').value;
+  penaltyState[t].push({result,shooter:$('penShooter').value.trim(),round:Number($('penRound').value)||1,at:Date.now()});
+  $('penActive').value=t==='A'?'B':'A';$('penShooter').value='';publishPenalty();
+}
+$('shootoutToggle').addEventListener('click',()=>{const p=$('shootoutPanel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')p.scrollIntoView({behavior:'smooth',block:'nearest'});});
+function getShootoutOverlayUrl(){const field=$('shootoutLink');const entered=field?.value?.trim();if(entered){try{return new URL(entered,location.href).href}catch(e){}}return 'https://www.brklive19.in/BRKLIVE19_penalty_shootout_overlay_neon_arena.html'}
+function refreshShootoutLink(){const field=$('shootoutLink');if(!field.value.trim())field.value='https://www.brklive19.in/BRKLIVE19_penalty_shootout_overlay_neon_arena.html'}
+$('shootoutLink').addEventListener('change',()=>{const field=$('shootoutLink');try{const parsed=new URL(field.value.trim(),location.href);field.value=parsed.href;$('shootoutLinkStatus').textContent='URL set. If opening it still shows 404, upload the overlay HTML to this exact hosting path.'}catch(e){$('shootoutLinkStatus').textContent='Enter a valid full overlay URL.'}})
+refreshShootoutLink();
+$('shootoutOpen').addEventListener('click',()=>{const field=$('shootoutLink');const url=field.value.trim()||getShootoutOverlayUrl();window.open(url,'_blank')});
+$('shootoutCopy').addEventListener('click',async()=>{const url=$('shootoutLink').value.trim()||getShootoutOverlayUrl();$('shootoutLink').value=url;try{await navigator.clipboard.writeText(url);$('shootoutLinkStatus').textContent='Shootout overlay link copied. Paste it into OBS Browser Source.'}catch(e){$('shootoutLink').focus();$('shootoutLink').select();$('shootoutLinkStatus').textContent='Link selected. Press Ctrl+C to copy it, then paste into OBS Browser Source.'}});
+$('penApplyColors').addEventListener('click',()=>{publishPenalty();$('penResult').textContent='SHOOTOUT OVERLAY COLOURS APPLIED';});
+['penBgColor','penAccentColor','penTeamAColor','penTeamBColor','penResultColor','penResultTextColor'].forEach(id=>$(id).addEventListener('input',publishPenalty));
+$('penGoal').addEventListener('click',()=>penaltyKick('goal'));
+$('penMiss').addEventListener('click',()=>penaltyKick('miss'));
+$('penFinish').addEventListener('click',()=>{penaltyFinished=true;publishPenalty()});
+$('penUndo').addEventListener('click',()=>{penaltyFinished=false;const t=penaltyState.A.length>=penaltyState.B.length?'A':'B';penaltyState[t].pop();$('penActive').value=t;publishPenalty()});
+$('penReset').addEventListener('click',()=>{penaltyState.A.length=0;penaltyState.B.length=0;penaltyFinished=false;$('penActive').value='A';$('penRound').value='1';$('penShooter').value='';publishPenalty()});
+['penTeamA','penTeamB','penRound','penShooter','penActive'].forEach(id=>$(id).addEventListener('change',publishPenalty));
+
+const params=new URLSearchParams(location.search);
+const active=JSON.parse(localStorage.getItem('brklive19_activeFootballMatch')||'null');
+const selectedMatchId=params.get('matchId')||active?.matchId||'';
+let broadcast={tournamentName:'',matchName:'',customText:'',graphic:'none',playXI:null,playerChange:null};
+let matchXI={home:[],away:[]};
+function loadIndexFootballDetails(){
+  try{
+    const matches=JSON.parse(localStorage.getItem('brklive_matches')||'[]');
+    const m=matches.find(x=>x.id===selectedMatchId && x.sport==='football') || matches.find(x=>x.sport==='football');
+    if(m){
+      const ts=JSON.parse(localStorage.getItem('brklive_tournaments')||'[]');
+      const t=ts.find(x=>x.id===m.tournamentId && x.sport==='football');
+      broadcast.tournamentName=t?.name||m.tournamentName||'';
+      broadcast.matchName=m.matchName||`${m.teamAName||'HOME'} vs ${m.teamBName||'AWAY'}`;
+      matchXI.home=Array.isArray(m.xiTeamA)?m.xiTeamA:[]; matchXI.away=Array.isArray(m.xiTeamB)?m.xiTeamB:[];
+      $('tournament').value=broadcast.tournamentName; $('match').value=broadcast.matchName;
+      $('home').value=m.teamAName||'HOME'; $('away').value=m.teamBName||'AWAY';
+      localStorage.setItem('brklive19_activeFootballMatch',JSON.stringify({matchId:m.id,tournamentId:m.tournamentId,homeTeam:m.teamAName,awayTeam:m.teamBName,duration:m.footballDuration||90,halfMinutes:m.footballHalfMinutes||45,extraTime:m.footballExtraTime!==false}));
+    }
+  }catch(e){console.warn('Index football data load failed',e)}
+}
+loadIndexFootballDetails();
+// Use the saved active match only when no matchId was supplied by Index.
+if(active && !selectedMatchId){$('home').value=active.homeTeam||'HOME';$('away').value=active.awayTeam||'AWAY';}
+let saved={};try{saved=JSON.parse(localStorage.getItem('brklive19_football_state')||'{}')||{}}catch(e){}
+let s={home:Number(saved.home)||0,away:Number(saved.away)||0,hy:Number(saved.hy)||0,ay:Number(saved.ay)||0,hr:Number(saved.hr)||0,ar:Number(saved.ar)||0,sec:Number(saved.sec)||0,run:false,t:null,goal:null};
+let colors=JSON.parse(localStorage.getItem('brklive19_football_colors')||'{}');
+let bc=null;try{bc=new BroadcastChannel('BRKLIVE19_LIVE')}catch(e){}
+let cloudBusy=false, cloudQueued=false;
+function packet(){return{sport:'football',football:{homeTeam:$('home').value||'HOME',awayTeam:$('away').value||'AWAY',homeScore:s.home,awayScore:s.away,homeYellow:s.hy,awayYellow:s.ay,homeRed:s.hr,awayRed:s.ar,seconds:s.sec,running:!!s.run,period:$('period').value,addedTime:Number($('added').value)||0,updatedAt:Date.now(),colors:{primary:colors.primary||'#087d4b',accent:colors.accent||'#53e89a',score:colors.score||'#061b35',goal:colors.goal||'#16c784'},goal:s.goal||null,broadcast:{...broadcast,matchXI}}}}
+function publishLocal(){const d=packet();localStorage.setItem('brklive19_football',JSON.stringify(d.football));localStorage.setItem('brklive19_liveSport',JSON.stringify(d.football));localStorage.setItem('brklive19_football_state',JSON.stringify({...s,t:null}));try{bc&&bc.postMessage(d)}catch(e){}return d}
+async function publishCloud(){if(cloudBusy){cloudQueued=true;return}cloudBusy=true;try{const d=publishLocal();await set(live,{...d,updatedAt:Date.now()})}catch(e){console.warn('Football Firebase sync failed',e)}finally{cloudBusy=false;if(cloudQueued){cloudQueued=false;publishCloud()}}}
+function fillPlayerChangeLists(){const team=$('changeTeam').value;const arr=matchXI[team]||[];const out=$('playerOut'),inn=$('playerIn');out.innerHTML='<option value="">— Select Player —</option>'+arr.map(p=>`<option>${p}</option>`).join('');inn.innerHTML='<option value="">— Select Player —</option>'+arr.map(p=>`<option>${p}</option>`).join('')}
+function showPlayXI(){broadcast.graphic='playXI';broadcast.playXI={homeTeam:$('home').value||'HOME',awayTeam:$('away').value||'AWAY',homePlayers:matchXI.home,awayPlayers:matchXI.away};broadcast.playerChange=null;localStorage.setItem('brklive19_football_broadcast',JSON.stringify(broadcast));$('playerGraphicStatus').textContent=`Play XI: ${matchXI.home.length} + ${matchXI.away.length} players`;syncNow()}
+$('showPlayXI').onclick=showPlayXI; $('showPlayerChange').onclick=()=>{$('playerChangeForm').style.display='block';fillPlayerChangeLists();$('playerGraphicStatus').textContent='Select player IN/OUT';}; $('changeTeam').onchange=fillPlayerChangeLists; $('sendPlayerChange').onclick=()=>{const team=$('changeTeam').value,out=$('playerOut').value,inn=$('playerIn').value;if(!out||!inn){alert('Select Player OUT and Player IN');return} broadcast.graphic='playerChange';broadcast.playerChange={team,teamName:team==='home'?($('home').value||'HOME'):($('away').value||'AWAY'),playerOut:out,playerIn:inn};broadcast.playXI=null;localStorage.setItem('brklive19_football_broadcast',JSON.stringify(broadcast));$('playerGraphicStatus').textContent=`${broadcast.playerChange.teamName}: ${out} OUT → ${inn} IN`;syncNow()};
+function setGraphic(type){
+  broadcast.tournamentName=$('tournament').value.trim();
+  broadcast.matchName=$('match').value.trim();
+  broadcast.customText=$('customText').value.trim();
+  if(type==='custom'&&!broadcast.customText){$('graphicStatus').textContent='Enter custom text first';$('customText').focus();return;}
+  broadcast.graphic=type;
+  localStorage.setItem('brklive19_football_broadcast',JSON.stringify(broadcast));
+  $('graphicStatus').textContent=type==='tournament'?`Tournament: ${broadcast.tournamentName||'—'}`:type==='match'?`Match: ${broadcast.matchName||'—'}`:type==='custom'?`Custom: ${broadcast.customText||'—'}`:'No graphic selected';
+  syncNow();
+}
+['tournament','match','customText'].forEach(id=>$(id).addEventListener('input',()=>{broadcast.tournamentName=$('tournament').value;broadcast.matchName=$('match').value;broadcast.customText=$('customText').value;localStorage.setItem('brklive19_football_broadcast',JSON.stringify(broadcast));}));
+$('showTournament').onclick=()=>setGraphic('tournament');
+$('showMatch').onclick=()=>setGraphic('match');
+$('showCustom').onclick=()=>setGraphic('custom');
+$('hideGraphic').onclick=()=>setGraphic('none');
+try{const b=JSON.parse(localStorage.getItem('brklive19_football_broadcast')||'null');if(b){broadcast={...broadcast,...b};$('tournament').value=broadcast.tournamentName||'';$('match').value=broadcast.matchName||'';$('customText').value=broadcast.customText||'';}}catch(e){}
+
+function render(){ $('homeName').textContent=$('home').value.toUpperCase()||'HOME';$('awayName').textContent=$('away').value.toUpperCase()||'AWAY';$('homeScore').textContent=s.home;$('awayScore').textContent=s.away;$('timer').textContent=String(Math.floor(s.sec/60)).padStart(2,'0')+':'+String(s.sec%60).padStart(2,'0');$('status').textContent=$('period').value+' • +'+(Number($('added').value)||0)+' MIN • 🟨 '+s.hy+'-'+s.ay+' • 🟥 '+s.hr+'-'+s.ar}
+function syncNow(){render();publishLocal();publishCloud()}
+function bind(id,fn){$(id).onclick=()=>{fn();syncNow()}}
+bind('homeGoal',()=>{s.home++;s.goal={team:'home',name:$('home').value||'HOME',id:Date.now()}});bind('awayGoal',()=>{s.away++;s.goal={team:'away',name:$('away').value||'AWAY',id:Date.now()}});bind('homeYellow',()=>s.hy++);bind('awayYellow',()=>s.ay++);bind('homeRed',()=>s.hr++);bind('awayRed',()=>s.ar++);
+$('start').onclick=()=>{if(s.run)return;s.run=true;syncNow();s.t=setInterval(()=>{s.sec++;render();publishLocal();publishCloud()},1000)};
+$('pause').onclick=()=>{s.run=false;clearInterval(s.t);s.t=null;syncNow()};
+$('reset').onclick=()=>{s.run=false;clearInterval(s.t);s={home:0,away:0,hy:0,ay:0,hr:0,ar:0,sec:0,run:false,t:null,goal:null};syncNow()};
+async function send(){syncNow();$('status').textContent='LIVE SCORE UPDATED'}
+$('applyColors').onclick=()=>{colors={primary:$('primaryColor').value,accent:$('accentColor').value,score:$('scoreColor').value,goal:$('goalColor').value};localStorage.setItem('brklive19_football_colors',JSON.stringify(colors));syncNow()};
+$('save').onclick=send;
+['home','away','period','added'].forEach(id=>{$(id).addEventListener('change',syncNow);$(id).addEventListener('input',()=>{render();publishLocal()})});
+const overlayUrl=()=>{const u=new URL(location.href);u.pathname=u.pathname.replace(/[^/]*$/,'football-overlay.html');u.search='';u.hash='';return u.href};
+const overlayUrl2=()=>{const u=new URL(location.href);u.pathname=u.pathname.replace(/[^/]*$/,'football%20overlayer%202%20(1).html');u.search='';u.hash='';return u.href};
+$('openOverlay').onclick=()=>window.open(overlayUrl(),'_blank');
+$('copyOverlay').onclick=()=>navigator.clipboard.writeText(overlayUrl()).then(()=>alert('Overlay link 1 copied'));
+$('openOverlay2').onclick=()=>window.open(overlayUrl2(),'_blank');
+$('copyOverlay2').onclick=()=>navigator.clipboard.writeText(overlayUrl2()).then(()=>alert('Overlay link 2 copied'));
+render();publishLocal();publishCloud();
+</script></body>
+<style id="BRKLIVE19-GLOBAL-SCROLL-FIX">
+
+/* =========================================================
+   BRKLIVE19 GLOBAL PAGE SCROLL FIX
+   All control/setup pages can scroll when content exceeds
+   the viewport. Broadcast overlays remain unchanged.
+   ========================================================= */
+html {
+  min-height: 100% !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth;
+}
+body {
+  min-height: 100vh !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+  padding-bottom: 48px !important;
+}
+/* Never let a full page be clipped by a fixed-height wrapper. */
+.page, .container, .wrap, .main, .content, .content-area,
+.dashboard, .app, .app-container, .main-content, .section,
+.sections, .settings, .form-container, .score-container {
+  max-height: none;
+}
+/* Long forms/tables remain reachable on small screens. */
+table {
+  max-width: 100%;
+}
+pre, textarea {
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  body { padding-left: 10px !important; padding-right: 10px !important; }
+}
+
+</style>
+</html>
